@@ -1,5 +1,6 @@
-CMakeFiles/main.dir/main.cpp.o: /home/hwndrer/kurs_os/main.cpp \
- /usr/include/stdc-predef.h /home/hwndrer/kurs_os/includes/console.h \
+CMakeFiles/main.dir/src/console.cpp.o: \
+ /home/hwndrer/kurs_os/src/console.cpp /usr/include/stdc-predef.h \
+ /home/hwndrer/kurs_os/src/../includes/console.h \
  /usr/include/c++/11/string \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
