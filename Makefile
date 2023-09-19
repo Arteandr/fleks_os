@@ -153,6 +153,30 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+src/clear.o: src/clear.cpp.o
+.PHONY : src/clear.o
+
+# target to build an object file
+src/clear.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/clear.cpp.o
+.PHONY : src/clear.cpp.o
+
+src/clear.i: src/clear.cpp.i
+.PHONY : src/clear.i
+
+# target to preprocess a source file
+src/clear.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/clear.cpp.i
+.PHONY : src/clear.cpp.i
+
+src/clear.s: src/clear.cpp.s
+.PHONY : src/clear.s
+
+# target to generate assembly for a file
+src/clear.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/clear.cpp.s
+.PHONY : src/clear.cpp.s
+
 src/console.o: src/console.cpp.o
 .PHONY : src/console.o
 
@@ -177,6 +201,54 @@ src/console.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/console.cpp.s
 .PHONY : src/console.cpp.s
 
+src/executor.o: src/executor.cpp.o
+.PHONY : src/executor.o
+
+# target to build an object file
+src/executor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/executor.cpp.o
+.PHONY : src/executor.cpp.o
+
+src/executor.i: src/executor.cpp.i
+.PHONY : src/executor.i
+
+# target to preprocess a source file
+src/executor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/executor.cpp.i
+.PHONY : src/executor.cpp.i
+
+src/executor.s: src/executor.cpp.s
+.PHONY : src/executor.s
+
+# target to generate assembly for a file
+src/executor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/executor.cpp.s
+.PHONY : src/executor.cpp.s
+
+src/exit.o: src/exit.cpp.o
+.PHONY : src/exit.o
+
+# target to build an object file
+src/exit.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/exit.cpp.o
+.PHONY : src/exit.cpp.o
+
+src/exit.i: src/exit.cpp.i
+.PHONY : src/exit.i
+
+# target to preprocess a source file
+src/exit.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/exit.cpp.i
+.PHONY : src/exit.cpp.i
+
+src/exit.s: src/exit.cpp.s
+.PHONY : src/exit.s
+
+# target to generate assembly for a file
+src/exit.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/exit.cpp.s
+.PHONY : src/exit.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -189,9 +261,18 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... src/clear.o"
+	@echo "... src/clear.i"
+	@echo "... src/clear.s"
 	@echo "... src/console.o"
 	@echo "... src/console.i"
 	@echo "... src/console.s"
+	@echo "... src/executor.o"
+	@echo "... src/executor.i"
+	@echo "... src/executor.s"
+	@echo "... src/exit.o"
+	@echo "... src/exit.i"
+	@echo "... src/exit.s"
 .PHONY : help
 
 

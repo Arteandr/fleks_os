@@ -1,6 +1,7 @@
-CMakeFiles/main.dir/src/console.cpp.o: \
- /home/hwndrer/kurs_os/src/console.cpp /usr/include/stdc-predef.h \
- /home/hwndrer/kurs_os/src/../includes/console.h \
+CMakeFiles/main.dir/src/executor.cpp.o: \
+ /home/hwndrer/kurs_os/src/executor.cpp /usr/include/stdc-predef.h \
+ /home/hwndrer/kurs_os/src/../includes/executor.h \
+ /home/hwndrer/kurs_os/src/../includes/command.h \
  /usr/include/c++/11/string \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -132,9 +133,22 @@ CMakeFiles/main.dir/src/console.cpp.o: \
  /usr/include/c++/11/bits/stl_uninitialized.h \
  /usr/include/c++/11/bits/stl_vector.h \
  /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc /usr/include/c++/11/cstring \
- /usr/include/string.h /usr/include/strings.h /usr/include/c++/11/ios \
- /usr/include/c++/11/exception /usr/include/c++/11/bits/exception_ptr.h \
+ /usr/include/c++/11/bits/vector.tcc /usr/include/c++/11/map \
+ /usr/include/c++/11/bits/stl_tree.h \
+ /usr/include/c++/11/ext/aligned_buffer.h \
+ /usr/include/c++/11/bits/node_handle.h \
+ /usr/include/c++/11/bits/stl_map.h /usr/include/c++/11/tuple \
+ /usr/include/c++/11/utility /usr/include/c++/11/bits/stl_relops.h \
+ /usr/include/c++/11/array /usr/include/c++/11/bits/uses_allocator.h \
+ /usr/include/c++/11/bits/invoke.h \
+ /usr/include/c++/11/bits/stl_multimap.h \
+ /usr/include/c++/11/bits/erase_if.h \
+ /home/hwndrer/kurs_os/src/../includes/clear.h \
+ /home/hwndrer/kurs_os/src/../includes/exit.h \
+ /home/hwndrer/kurs_os/src/../includes/os_status.h \
+ /usr/include/c++/11/iostream /usr/include/c++/11/ostream \
+ /usr/include/c++/11/ios /usr/include/c++/11/exception \
+ /usr/include/c++/11/bits/exception_ptr.h \
  /usr/include/c++/11/bits/cxxabi_init_exception.h \
  /usr/include/c++/11/typeinfo /usr/include/c++/11/bits/nested_exception.h \
  /usr/include/c++/11/bits/ios_base.h \
@@ -151,7 +165,6 @@ CMakeFiles/main.dir/src/console.cpp.o: \
  /usr/include/c++/11/bits/streambuf_iterator.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h \
  /usr/include/c++/11/bits/locale_facets.tcc \
- /usr/include/c++/11/bits/basic_ios.tcc /usr/include/c++/11/iostream \
- /usr/include/c++/11/ostream /usr/include/c++/11/bits/ostream.tcc \
- /usr/include/c++/11/istream /usr/include/c++/11/bits/istream.tcc \
- /usr/include/c++/11/limits
+ /usr/include/c++/11/bits/basic_ios.tcc \
+ /usr/include/c++/11/bits/ostream.tcc /usr/include/c++/11/istream \
+ /usr/include/c++/11/bits/istream.tcc

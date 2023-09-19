@@ -1,23 +1,56 @@
 #include "../includes/console.h"
 #include <cstdio>
+#include <cstring>
+#include <ios>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <vector>
 using namespace std;
 
+void trim(char *str) {
+  if (str == nullptr) {
+    return; // Защита от нулевого указателя
+  }
+  char *start = str;
+  char *end = str + strlen(str) - 1;
+
+  while (isspace(*start))
+    start++;
+
+  if (start > end) {
+    str[0] = '\0';
+    return;
+  }
+
+  while (isspace(*end))
+    end--;
+
+  end[1] = '\0';
+}
 ConsoleInput *Console::prompt() {
   vector<string> cmd;
   string tmp;
   bool end = false;
 
   cmd.clear();
-  do {
-    if ((cin >> tmp) && (cin.peek() == '\n') || cin.eof())
-      end = true;
-
-    if (!cin.eof())
-      cmd.push_back(tmp);
-  } while (!end);
+  // do {
+  //   if ((cin >> tmp) && (cin.peek() == '\n') || cin.eof())
+  //     end = true;
+  //   cout << cin.peek() << endl;
+  //
+  //   if (!cin.eof())
+  //     cmd.push_back(tmp);
+  // } while (!end);
+  //
+  char i[256];
+  fgets(i, sizeof(i), stdin);
+  char *token = strtok(i, " ");
+  while (token != nullptr) {
+    trim(token);
+    cmd.push_back(token);
+    token = strtok(nullptr, " ");
+  }
 
   cin.sync();
   cin.clear();

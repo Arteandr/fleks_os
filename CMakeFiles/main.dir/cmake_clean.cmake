@@ -1,8 +1,14 @@
 file(REMOVE_RECURSE
   "CMakeFiles/main.dir/main.cpp.o"
   "CMakeFiles/main.dir/main.cpp.o.d"
+  "CMakeFiles/main.dir/src/clear.cpp.o"
+  "CMakeFiles/main.dir/src/clear.cpp.o.d"
   "CMakeFiles/main.dir/src/console.cpp.o"
   "CMakeFiles/main.dir/src/console.cpp.o.d"
+  "CMakeFiles/main.dir/src/executor.cpp.o"
+  "CMakeFiles/main.dir/src/executor.cpp.o.d"
+  "CMakeFiles/main.dir/src/exit.cpp.o"
+  "CMakeFiles/main.dir/src/exit.cpp.o.d"
   "main"
   "main.pdb"
 )

@@ -131,7 +131,19 @@ CMakeFiles/main.dir/main.cpp.o: /home/hwndrer/kurs_os/main.cpp \
  /usr/include/c++/11/bits/stl_uninitialized.h \
  /usr/include/c++/11/bits/stl_vector.h \
  /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc /usr/include/c++/11/iostream \
+ /usr/include/c++/11/bits/vector.tcc \
+ /home/hwndrer/kurs_os/includes/executor.h \
+ /home/hwndrer/kurs_os/includes/command.h /usr/include/c++/11/map \
+ /usr/include/c++/11/bits/stl_tree.h \
+ /usr/include/c++/11/ext/aligned_buffer.h \
+ /usr/include/c++/11/bits/node_handle.h \
+ /usr/include/c++/11/bits/stl_map.h /usr/include/c++/11/tuple \
+ /usr/include/c++/11/utility /usr/include/c++/11/bits/stl_relops.h \
+ /usr/include/c++/11/array /usr/include/c++/11/bits/uses_allocator.h \
+ /usr/include/c++/11/bits/invoke.h \
+ /usr/include/c++/11/bits/stl_multimap.h \
+ /usr/include/c++/11/bits/erase_if.h \
+ /home/hwndrer/kurs_os/includes/os_status.h /usr/include/c++/11/iostream \
  /usr/include/c++/11/ostream /usr/include/c++/11/ios \
  /usr/include/c++/11/exception /usr/include/c++/11/bits/exception_ptr.h \
  /usr/include/c++/11/bits/cxxabi_init_exception.h \
