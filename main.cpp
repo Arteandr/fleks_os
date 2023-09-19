@@ -6,7 +6,17 @@ using namespace std;
 
 void clear() { system("clear"); }
 
-void start() { clear(); }
+void start() {
+  clear();
+  bool mainLoop = true;
+  while (mainLoop) {
+    cout << "courseworkOS> ";
+    ConsoleInput *input = Console::prompt();
+    cout << input->cmd << endl;
+
+    delete (input);
+  }
+}
 
 int main() {
   bool loop = true;
@@ -22,6 +32,10 @@ int main() {
     ConsoleInput *input = Console::prompt();
     if (input->cmd.length() > 0) {
       switch (atoi(input->cmd.c_str())) {
+      case 1:
+        loop = false;
+        start();
+        break;
       case 3:
         clear();
         loop = false;
