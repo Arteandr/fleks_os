@@ -5,7 +5,7 @@
 #include <vector>
 using namespace std;
 
-vector<string> Console::prompt() {
+ConsoleInput *Console::prompt() {
   vector<string> cmd;
   string tmp;
   bool end = false;
@@ -21,6 +21,10 @@ vector<string> Console::prompt() {
 
   cin.sync();
   cin.clear();
+  ConsoleInput *input = new ConsoleInput();
+  input->cmd = cmd[0];
+  cmd.erase(cmd.begin());
+  input->args = cmd;
 
-  return cmd;
+  return input;
 }

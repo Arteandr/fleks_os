@@ -6,6 +6,8 @@ using namespace std;
 
 void clear() { system("clear"); }
 
+void start() { clear(); }
+
 int main() {
   bool loop = true;
 
@@ -17,9 +19,13 @@ int main() {
     cout << "3 - Выход" << endl << endl;
     cout << "courseworkOS> ";
 
-    vector<string> cmd = Console::prompt();
-    if (cmd.size() > 0) {
-      switch (atoi(cmd[0].c_str())) {
+    ConsoleInput *input = Console::prompt();
+    if (input->cmd.length() > 0) {
+      switch (atoi(input->cmd.c_str())) {
+      case 3:
+        clear();
+        loop = false;
+        break;
       default:
         cerr << "Неверный выбор" << endl;
         break;

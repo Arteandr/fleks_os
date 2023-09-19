@@ -3,10 +3,16 @@
 
 #include <string>
 #include <vector>
+
+struct ConsoleInput {
+  std::string cmd;
+  std::vector<std::string> args;
+};
+
 class Console {
 public:
   static std::string password();
-  static std::vector<std::string> prompt();
+  static ConsoleInput *prompt();
 };
 
 #endif
