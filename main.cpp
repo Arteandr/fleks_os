@@ -33,7 +33,30 @@ void start() {
   }
 }
 
+void logo() {
+  clear();
+  const char *logo = "  ,-.       _,---._ __  / \\\n"
+                     " /  )    .-'       `./ /   \\\n"
+                     "(  (   ,'            `/    /|\n"
+                     " \\  `-'             \\'\\   / |\n"
+                     "  `.              ,  \\ \\ /  |\n"
+                     "   /`.          ,'-`----Y   |\n"
+                     "  (            ;        |   '\n"
+                     "  |  ,-.    ,-'         |  /\n"
+                     "  |  | (   |    fleksOS | /\n"
+                     "  )  |  \\  `.___________|/\n"
+                     "  `--'   `--'\n";
+
+  cout << logo << std::endl
+       << std::endl
+       << "Для продолжения нажмите любую кнопку...";
+  system("stty raw");
+  getchar();
+  system("stty cooked");
+}
+
 int main() {
+  logo();
   bool loop = true;
 
   while (loop) {

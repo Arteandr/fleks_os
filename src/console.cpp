@@ -28,6 +28,7 @@ void trim(char *str) {
 
   end[1] = '\0';
 }
+
 ConsoleInput *Console::prompt() {
   vector<string> cmd;
   string tmp;
