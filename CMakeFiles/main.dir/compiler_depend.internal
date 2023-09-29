@@ -3,10 +3,12 @@
 
 CMakeFiles/main.dir/main.cpp.o
  /home/hwndrer/kurs_os/main.cpp
+ /home/hwndrer/kurs_os/includes/bitmap.h
  /home/hwndrer/kurs_os/includes/command.h
  /home/hwndrer/kurs_os/includes/console.h
  /home/hwndrer/kurs_os/includes/executor.h
  /home/hwndrer/kurs_os/includes/os_status.h
+ /home/hwndrer/kurs_os/includes/shared.h
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
  /usr/include/asm-generic/errno.h
@@ -73,6 +75,7 @@ CMakeFiles/main.dir/main.cpp.o
  /usr/include/c++/11/cctype
  /usr/include/c++/11/cerrno
  /usr/include/c++/11/clocale
+ /usr/include/c++/11/cstddef
  /usr/include/c++/11/cstdint
  /usr/include/c++/11/cstdio
  /usr/include/c++/11/cstdlib
