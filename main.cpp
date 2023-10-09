@@ -5,7 +5,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #define OS_NAME "fleksOS"
@@ -13,18 +15,22 @@ using namespace std;
 
 void clear() { system("clear"); }
 
-std::string get_time() {
-  char *buf;
+std::string current_time() {
+  std::ostringstream oss;
+
   time_t now = time(0);
   struct tm timeinfo;
   localtime_r(&now, &timeinfo);
   int h = timeinfo.tm_hour;
-  int m = timeinfo.tm_min;
+  // int m = timeinfo.tm_min;
+  int m = 7;
   int s = timeinfo.tm_sec;
 
-  sprintf(buf, "[%02d:%02d:%02d]", h, m, s);
+  oss << "[" << std::setfill('0') << std::setw(2) << h << ":"
+      << std::setfill('0') << std::setw(2) << m << ":" << std::setfill('0')
+      << std::setw(2) << s << "]";
 
-  return buf;
+  return oss.str();
 }
 
 void start() {
@@ -33,8 +39,8 @@ void start() {
 
   bool mainLoop = true;
   while (mainLoop) {
-    cout << "\x1B[31m"
-         << " " << OS_NAME << "@"
+    std::string curr_time = current_time();
+    cout << "\x1B[31m" << curr_time << " " << OS_NAME << "@"
          << "hwndrer"
          << ":~$ \033[0m";
     ConsoleInput *input = Console::prompt();
