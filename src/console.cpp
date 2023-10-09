@@ -35,15 +35,6 @@ ConsoleInput *Console::prompt() {
   bool end = false;
 
   cmd.clear();
-  // do {
-  //   if ((cin >> tmp) && (cin.peek() == '\n') || cin.eof())
-  //     end = true;
-  //   cout << cin.peek() << endl;
-  //
-  //   if (!cin.eof())
-  //     cmd.push_back(tmp);
-  // } while (!end);
-  //
   char i[256];
   fgets(i, sizeof(i), stdin);
   char *token = strtok(i, " ");
