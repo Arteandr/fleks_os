@@ -10,8 +10,9 @@ using namespace std;
 
 void trim(char *str) {
   if (str == nullptr) {
-    return; // Защита от нулевого указателя
+    return;
   }
+
   char *start = str;
   char *end = str + strlen(str) - 1;
 

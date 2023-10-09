@@ -1,14 +1,31 @@
 #include "includes/console.h"
 #include "includes/executor.h"
 #include "includes/os_status.h"
+#include <bits/types/time_t.h>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
+#include <string>
 #include <vector>
 #define OS_NAME "fleksOS"
 using namespace std;
 
 void clear() { system("clear"); }
+
+std::string get_time() {
+  char *buf;
+  time_t now = time(0);
+  struct tm timeinfo;
+  localtime_r(&now, &timeinfo);
+  int h = timeinfo.tm_hour;
+  int m = timeinfo.tm_min;
+  int s = timeinfo.tm_sec;
+
+  sprintf(buf, "[%02d:%02d:%02d]", h, m, s);
+
+  return buf;
+}
 
 void start() {
   clear();
@@ -16,7 +33,8 @@ void start() {
 
   bool mainLoop = true;
   while (mainLoop) {
-    cout << "\x1B[31m" << OS_NAME << "@"
+    cout << "\x1B[31m"
+         << " " << OS_NAME << "@"
          << "hwndrer"
          << ":~$ \033[0m";
     ConsoleInput *input = Console::prompt();
