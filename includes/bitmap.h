@@ -4,7 +4,7 @@
 #include "shared.h"
 #include <cstddef>
 #include <cstdint>
-class Bitmap {
+class bitmap {
   byte *bitmap;
   size_t size;
 
