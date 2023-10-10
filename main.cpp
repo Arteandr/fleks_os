@@ -1,6 +1,7 @@
 #include "includes/console.h"
 #include "includes/executor.h"
 #include "includes/os_status.h"
+#include "includes/superblock.h"
 #include <bits/types/time_t.h>
 #include <cstdio>
 #include <cstdlib>

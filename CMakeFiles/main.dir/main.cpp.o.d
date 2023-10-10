@@ -143,7 +143,9 @@ CMakeFiles/main.dir/main.cpp.o: /home/hwndrer/kurs_os/main.cpp \
  /usr/include/c++/11/bits/invoke.h \
  /usr/include/c++/11/bits/stl_multimap.h \
  /usr/include/c++/11/bits/erase_if.h \
- /home/hwndrer/kurs_os/includes/os_status.h /usr/include/c++/11/ctime \
+ /home/hwndrer/kurs_os/includes/os_status.h \
+ /home/hwndrer/kurs_os/includes/superblock.h \
+ /home/hwndrer/kurs_os/includes/shared.h /usr/include/c++/11/ctime \
  /usr/include/c++/11/iomanip /usr/include/c++/11/bits/ios_base.h \
  /usr/include/c++/11/bits/locale_classes.h \
  /usr/include/c++/11/bits/locale_classes.tcc \
