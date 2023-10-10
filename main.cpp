@@ -22,8 +22,7 @@ std::string current_time() {
   struct tm timeinfo;
   localtime_r(&now, &timeinfo);
   int h = timeinfo.tm_hour;
-  // int m = timeinfo.tm_min;
-  int m = 7;
+  int m = timeinfo.tm_min;
   int s = timeinfo.tm_sec;
 
   oss << "[" << std::setfill('0') << std::setw(2) << h << ":"
