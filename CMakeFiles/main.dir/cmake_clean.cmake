@@ -1,6 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/main.dir/main.cpp.o"
   "CMakeFiles/main.dir/main.cpp.o.d"
+  "CMakeFiles/main.dir/src/bitmap.cpp.o"
+  "CMakeFiles/main.dir/src/bitmap.cpp.o.d"
   "CMakeFiles/main.dir/src/clear.cpp.o"
   "CMakeFiles/main.dir/src/clear.cpp.o.d"
   "CMakeFiles/main.dir/src/console.cpp.o"
@@ -9,6 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/main.dir/src/executor.cpp.o.d"
   "CMakeFiles/main.dir/src/exit.cpp.o"
   "CMakeFiles/main.dir/src/exit.cpp.o.d"
+  "CMakeFiles/main.dir/src/fs.cpp.o"
+  "CMakeFiles/main.dir/src/fs.cpp.o.d"
   "main"
   "main.pdb"
 )

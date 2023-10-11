@@ -153,6 +153,30 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+src/bitmap.o: src/bitmap.cpp.o
+.PHONY : src/bitmap.o
+
+# target to build an object file
+src/bitmap.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/bitmap.cpp.o
+.PHONY : src/bitmap.cpp.o
+
+src/bitmap.i: src/bitmap.cpp.i
+.PHONY : src/bitmap.i
+
+# target to preprocess a source file
+src/bitmap.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/bitmap.cpp.i
+.PHONY : src/bitmap.cpp.i
+
+src/bitmap.s: src/bitmap.cpp.s
+.PHONY : src/bitmap.s
+
+# target to generate assembly for a file
+src/bitmap.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/bitmap.cpp.s
+.PHONY : src/bitmap.cpp.s
+
 src/clear.o: src/clear.cpp.o
 .PHONY : src/clear.o
 
@@ -249,6 +273,30 @@ src/exit.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/exit.cpp.s
 .PHONY : src/exit.cpp.s
 
+src/fs.o: src/fs.cpp.o
+.PHONY : src/fs.o
+
+# target to build an object file
+src/fs.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/fs.cpp.o
+.PHONY : src/fs.cpp.o
+
+src/fs.i: src/fs.cpp.i
+.PHONY : src/fs.i
+
+# target to preprocess a source file
+src/fs.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/fs.cpp.i
+.PHONY : src/fs.cpp.i
+
+src/fs.s: src/fs.cpp.s
+.PHONY : src/fs.s
+
+# target to generate assembly for a file
+src/fs.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/fs.cpp.s
+.PHONY : src/fs.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -261,6 +309,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... src/bitmap.o"
+	@echo "... src/bitmap.i"
+	@echo "... src/bitmap.s"
 	@echo "... src/clear.o"
 	@echo "... src/clear.i"
 	@echo "... src/clear.s"
@@ -273,6 +324,9 @@ help:
 	@echo "... src/exit.o"
 	@echo "... src/exit.i"
 	@echo "... src/exit.s"
+	@echo "... src/fs.o"
+	@echo "... src/fs.i"
+	@echo "... src/fs.s"
 .PHONY : help
 
 

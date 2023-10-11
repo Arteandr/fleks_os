@@ -1,5 +1,6 @@
 #include "includes/console.h"
 #include "includes/executor.h"
+#include "includes/fs.h"
 #include "includes/os_status.h"
 #include "includes/superblock.h"
 #include <bits/types/time_t.h>
@@ -9,6 +10,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #define OS_NAME "fleksOS"
@@ -36,6 +38,15 @@ std::string current_time() {
 void start() {
   clear();
   Executor *executor = new Executor();
+  FS *fs = nullptr;
+
+  try {
+    fs = new FS(FS_FILENAME);
+  } catch (const runtime_error &e) {
+    cerr << "[Ошибка] " << e.what() << endl;
+    delete fs;
+    return;
+  }
 
   bool mainLoop = true;
   while (mainLoop) {

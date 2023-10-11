@@ -1,6 +1,6 @@
 #include "../includes/bitmap.h"
 
-void Bitmap::set_bit(size_t position, byte flag) {
+void bitmap::set_bit(size_t position, byte flag) {
   size_t element = position / 8;
   if (element > this->size)
     return;
@@ -13,7 +13,7 @@ void Bitmap::set_bit(size_t position, byte flag) {
   }
 }
 
-byte Bitmap::get_bit(size_t position) {
+byte bitmap::get_bit(size_t position) {
   size_t element = position / 8;
   size_t offset = position % 8;
 

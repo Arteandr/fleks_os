@@ -69,10 +69,24 @@ include CMakeFiles/main.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/main.dir/flags.make
 
+CMakeFiles/main.dir/src/bitmap.cpp.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/src/bitmap.cpp.o: src/bitmap.cpp
+CMakeFiles/main.dir/src/bitmap.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/main.dir/src/bitmap.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/bitmap.cpp.o -MF CMakeFiles/main.dir/src/bitmap.cpp.o.d -o CMakeFiles/main.dir/src/bitmap.cpp.o -c /home/hwndrer/kurs_os/src/bitmap.cpp
+
+CMakeFiles/main.dir/src/bitmap.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/main.dir/src/bitmap.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hwndrer/kurs_os/src/bitmap.cpp > CMakeFiles/main.dir/src/bitmap.cpp.i
+
+CMakeFiles/main.dir/src/bitmap.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/bitmap.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hwndrer/kurs_os/src/bitmap.cpp -o CMakeFiles/main.dir/src/bitmap.cpp.s
+
 CMakeFiles/main.dir/src/clear.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/clear.cpp.o: src/clear.cpp
 CMakeFiles/main.dir/src/clear.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/main.dir/src/clear.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/main.dir/src/clear.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/clear.cpp.o -MF CMakeFiles/main.dir/src/clear.cpp.o.d -o CMakeFiles/main.dir/src/clear.cpp.o -c /home/hwndrer/kurs_os/src/clear.cpp
 
 CMakeFiles/main.dir/src/clear.cpp.i: cmake_force
@@ -86,7 +100,7 @@ CMakeFiles/main.dir/src/clear.cpp.s: cmake_force
 CMakeFiles/main.dir/src/console.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/console.cpp.o: src/console.cpp
 CMakeFiles/main.dir/src/console.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/main.dir/src/console.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/main.dir/src/console.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/console.cpp.o -MF CMakeFiles/main.dir/src/console.cpp.o.d -o CMakeFiles/main.dir/src/console.cpp.o -c /home/hwndrer/kurs_os/src/console.cpp
 
 CMakeFiles/main.dir/src/console.cpp.i: cmake_force
@@ -100,7 +114,7 @@ CMakeFiles/main.dir/src/console.cpp.s: cmake_force
 CMakeFiles/main.dir/src/executor.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/executor.cpp.o: src/executor.cpp
 CMakeFiles/main.dir/src/executor.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/main.dir/src/executor.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/main.dir/src/executor.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/executor.cpp.o -MF CMakeFiles/main.dir/src/executor.cpp.o.d -o CMakeFiles/main.dir/src/executor.cpp.o -c /home/hwndrer/kurs_os/src/executor.cpp
 
 CMakeFiles/main.dir/src/executor.cpp.i: cmake_force
@@ -114,7 +128,7 @@ CMakeFiles/main.dir/src/executor.cpp.s: cmake_force
 CMakeFiles/main.dir/src/exit.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/exit.cpp.o: src/exit.cpp
 CMakeFiles/main.dir/src/exit.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/main.dir/src/exit.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/main.dir/src/exit.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/exit.cpp.o -MF CMakeFiles/main.dir/src/exit.cpp.o.d -o CMakeFiles/main.dir/src/exit.cpp.o -c /home/hwndrer/kurs_os/src/exit.cpp
 
 CMakeFiles/main.dir/src/exit.cpp.i: cmake_force
@@ -125,10 +139,24 @@ CMakeFiles/main.dir/src/exit.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/exit.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hwndrer/kurs_os/src/exit.cpp -o CMakeFiles/main.dir/src/exit.cpp.s
 
+CMakeFiles/main.dir/src/fs.cpp.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp
+CMakeFiles/main.dir/src/fs.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/main.dir/src/fs.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/fs.cpp.o -MF CMakeFiles/main.dir/src/fs.cpp.o.d -o CMakeFiles/main.dir/src/fs.cpp.o -c /home/hwndrer/kurs_os/src/fs.cpp
+
+CMakeFiles/main.dir/src/fs.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/main.dir/src/fs.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hwndrer/kurs_os/src/fs.cpp > CMakeFiles/main.dir/src/fs.cpp.i
+
+CMakeFiles/main.dir/src/fs.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/fs.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hwndrer/kurs_os/src/fs.cpp -o CMakeFiles/main.dir/src/fs.cpp.s
+
 CMakeFiles/main.dir/main.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/main.cpp.o: main.cpp
 CMakeFiles/main.dir/main.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/main.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/main.dir/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/main.cpp.o -MF CMakeFiles/main.dir/main.cpp.o.d -o CMakeFiles/main.dir/main.cpp.o -c /home/hwndrer/kurs_os/main.cpp
 
 CMakeFiles/main.dir/main.cpp.i: cmake_force
@@ -141,23 +169,27 @@ CMakeFiles/main.dir/main.cpp.s: cmake_force
 
 # Object files for target main
 main_OBJECTS = \
+"CMakeFiles/main.dir/src/bitmap.cpp.o" \
 "CMakeFiles/main.dir/src/clear.cpp.o" \
 "CMakeFiles/main.dir/src/console.cpp.o" \
 "CMakeFiles/main.dir/src/executor.cpp.o" \
 "CMakeFiles/main.dir/src/exit.cpp.o" \
+"CMakeFiles/main.dir/src/fs.cpp.o" \
 "CMakeFiles/main.dir/main.cpp.o"
 
 # External object files for target main
 main_EXTERNAL_OBJECTS =
 
+main: CMakeFiles/main.dir/src/bitmap.cpp.o
 main: CMakeFiles/main.dir/src/clear.cpp.o
 main: CMakeFiles/main.dir/src/console.cpp.o
 main: CMakeFiles/main.dir/src/executor.cpp.o
 main: CMakeFiles/main.dir/src/exit.cpp.o
+main: CMakeFiles/main.dir/src/fs.cpp.o
 main: CMakeFiles/main.dir/main.cpp.o
 main: CMakeFiles/main.dir/build.make
 main: CMakeFiles/main.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/hwndrer/kurs_os/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable main"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/main.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
