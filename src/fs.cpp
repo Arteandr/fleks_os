@@ -19,7 +19,8 @@ FS::FS(std::string filename) {
   }
 }
 
-// size - Размер в байтах
+// fs_size - Размер ФС в байтах
+// block_size - Размер блока в байтах
 void FS::format(size_t fs_size, size_t block_size) {
   std::cout << "Размер ФС (байт): " << fs_size
             << " (мбайт): " << fs_size / 1024 / 1024 << std::endl;

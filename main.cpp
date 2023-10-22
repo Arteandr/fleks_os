@@ -43,7 +43,6 @@ void start() {
 
   try {
     fs = new FS(FS_FILENAME);
-    fs->format(35 * 1024 * 1024, 1024);
   } catch (const runtime_error &e) {
     cerr << "[Ошибка] " << e.what() << endl;
     delete fs;
@@ -68,6 +67,77 @@ void start() {
         break;
       }
   }
+}
+
+void install() {
+  std::string curr_time;
+  u32 fs_size, block_size;
+  ConsoleInput *input = nullptr;
+  std::string error = "";
+
+  bool mainLoop = true;
+  while (mainLoop) {
+    clear();
+    curr_time = current_time();
+    if (error.length() > 0)
+      std::cout << curr_time << " [ОШИБКА]: " << error << std::endl
+                << std::endl;
+    std::cout << curr_time
+              << " Введите размер файловой системы в мегабайтах (min:8): ";
+    input = Console::prompt();
+    if (input->cmd.length() < 1)
+      continue;
+    else {
+      int size = atoi(input->cmd.c_str());
+      if (size == 0 || size < 8) {
+        error = "Введено неверное число.";
+        continue;
+      }
+      fs_size = atoi(input->cmd.c_str());
+    }
+
+    error.clear();
+    break;
+  }
+
+  while (mainLoop) {
+    clear();
+    curr_time = current_time();
+    std::cout << curr_time << " Размер файловой системы: " << fs_size << " мб"
+              << std::endl
+              << std::endl;
+    if (error.length() > 0)
+      std::cout << curr_time << " [ОШИБКА]: " << error << std::endl
+                << std::endl;
+    std::cout << curr_time << " Введите размер блока в байтах: ";
+    input = Console::prompt();
+    if (input->cmd.length() < 1)
+      continue;
+    else {
+      int size = atoi(input->cmd.c_str());
+      if (size == 0) {
+        error = "Введено неверное число.";
+        continue;
+      }
+
+      switch (size) {
+      case 1024:
+      case 2048:
+      case 4096:
+        block_size = size;
+        break;
+      default:
+        error = "Введен неверный размер блока. Допустимые значения: 1024, "
+                "2048, 4096";
+        continue;
+      }
+    }
+
+    error.clear();
+    break;
+  }
+
+  return FS::format(fs_size * 1024 * 1024, block_size);
 }
 
 void logo() {
@@ -114,6 +184,10 @@ int main() {
       case 1:
         loop = false;
         start();
+        break;
+      case 2:
+        loop = false;
+        install();
         break;
       case 3:
         clear();
