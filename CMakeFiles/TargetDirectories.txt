@@ -1,3 +1,0 @@
-/home/hwndrer/kurs_os/CMakeFiles/main.dir
-/home/hwndrer/kurs_os/CMakeFiles/edit_cache.dir
-/home/hwndrer/kurs_os/CMakeFiles/rebuild_cache.dir
