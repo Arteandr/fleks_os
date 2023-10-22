@@ -17,42 +17,26 @@ FS::FS(std::string filename) {
     std::string error = "Ошибка при открытии файла ФС - \"" + filename + "\"";
     throw std::runtime_error(error);
   }
-
-  // this->superblock = (super_block *)malloc(SUPER_SIZE);
-  // memset(this->superblock, 0, SUPER_SIZE);
-  //
-  // // Устанавливаем смещение суперблока
-  // this->fd.seekg(SUPER_OFFSET, std::ios::beg);
-  // this->fd.read((char *)this->superblock, SUPER_SIZE);
-  // if (this->fd.gcount() != SUPER_SIZE) {
-  //   std::string error = "Невозможно прочитать суперблок";
-  //   throw std::runtime_error(error);
-  //
-  // }
 }
-
-// char *align(void *s, size_t align_size) {
-//   size_t struct_size = sizeof(s);
-//   size_t padding = align_size - (struct_size % align_size);
-//   size_t total_size = struct_size + padding;
-//
-//   char *buffer = (char *)malloc(total_size);
-//   memset(buffer, 0, total_size);
-//   memcpy(buffer, &s, struct_size);
-//
-//   return buffer;
-// }
 
 // size - Размер в байтах
 void FS::format(size_t fs_size, size_t block_size) {
+  std::cout << "Размер ФС (байт): " << fs_size
+            << " (мбайт): " << fs_size / 1024 / 1024 << std::endl;
+  std::cout << "Размер блока (байт): " << block_size
+            << " (кбайт): " << block_size / 1024 << std::endl;
   // Высчитываем необходимое количество блоков
   u32 blocks_count = fs_size / block_size;
+  std::cout << "Количество блоков: " << blocks_count << std::endl;
   // Количество inode в группе
   u32 inodes_per_group = block_size * 8;
+  std::cout << "Количество inode в группе: " << inodes_per_group << std::endl;
   // Количество групп блоков
-  u32 groups_count = std::ceil(blocks_count / BLOCKS_PER_GROUP);
+  u32 groups_count = ceil((double)blocks_count / BLOCKS_PER_GROUP);
+  std::cout << "Количество групп блоков: " << groups_count << std::endl;
   // Общее количество inode
   u32 inodes_count = inodes_per_group * groups_count;
+  std::cout << "Общее количество inode: " << inodes_count << std::endl;
 
   super_block *sb = new super_block;
   sb->s_inodes_count = inodes_count;
@@ -66,10 +50,10 @@ void FS::format(size_t fs_size, size_t block_size) {
   group_desc *group_desc_table =
       (group_desc *)malloc(groups_count * sizeof(group_desc));
 
-  std::string filename = "filesystem";
-  std::fstream fd = std::fstream(filename, std::ios::out | std::ios::binary);
+  std::fstream fd = std::fstream(FS_FILENAME, std::ios::out | std::ios::binary);
   if (!fd.is_open()) {
-    std::string error = "Ошибка при открытии файла ФС - \"" + filename + "\"";
+    std::string error =
+        "Ошибка при открытии файла ФС - \"" + std::string(FS_FILENAME) + "\"";
     throw std::runtime_error(error);
   }
 
@@ -88,47 +72,61 @@ void FS::format(size_t fs_size, size_t block_size) {
     // для последней группы
     if (blocks_count % BLOCKS_PER_GROUP != 0 && group_no == groups_count)
       remaining_blocks = blocks_count % BLOCKS_PER_GROUP;
+    std::cout << "[" << group_no << "] Количество блоков - " << remaining_blocks
+              << std::endl;
     const size_t start_blocks_count = remaining_blocks;
 
     if (group_no == 1) {
       fd.write(reinterpret_cast<char *>(&sb), sizeof(*sb));
-      fd.seekg(block_size);
+      std::cout << "[" << group_no << "] Запись суперблока" << std::endl;
+      fd.seekg(block_size, std::ios::beg);
       fd.write(reinterpret_cast<char *>(&group_desc_table),
                sizeof(*group_desc_table));
-      fd.seekg(block_size * 2);
+      std::cout << "[" << group_no << "] Запись bgt" << std::endl;
+      fd.seekg(block_size * 2, std::ios::beg);
       remaining_blocks -= 2;
     }
 
     bitmap *blocks_bitmap = new bitmap(BLOCKS_PER_GROUP);
-    fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks));
+    fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks),
+             std::ios::beg);
     fd.write(reinterpret_cast<char *>(blocks_bitmap->get_bitmap()),
              blocks_bitmap->get_size());
+    std::cout << "[" << group_no << "] Запись blocks_bitmap" << std::endl;
     remaining_blocks -= 1;
 
     bitmap *inodes_bitmap = new bitmap(inodes_per_group);
-    fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks));
+    fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks),
+             std::ios::beg);
     fd.write(reinterpret_cast<char *>(inodes_bitmap->get_bitmap()),
              inodes_bitmap->get_size());
+    std::cout << "[" << group_no << "] Запись inodes_bitmap" << std::endl;
     remaining_blocks -= 1;
 
     inode *inode_table = (inode *)malloc(inodes_per_group);
-    fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks));
+    fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks),
+             std::ios::beg);
     fd.write(reinterpret_cast<char *>(&inode_table), inodes_per_group);
+    std::cout << "[" << group_no << "] Запись inodes_table" << std::endl;
     remaining_blocks -= 1;
 
+    std::cout << "[" << group_no
+              << "] Запись buffer. Осталось блоков: " << remaining_blocks
+              << std::endl;
     char *buffer = (char *)calloc(remaining_blocks, block_size);
-    fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks));
+    fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks),
+             std::ios::beg);
     fd.write(buffer, remaining_blocks * block_size);
-  }
+    std::cout << "[" << group_no << "] Запись buffer окончена" << std::endl;
+    std::cout << std::endl;
 
-  //
-  // fd.seekg(block_size);
-  // bitmap *inodes_bitmap = new bitmap(inodes_count);
-  // bitmap *blocks_bitmap = new bitmap(blocks_count);
-  // std::cout << "blocks_size: " << sizeof(u8) * blocks_bitmap->get_size();
-  //
-  // fd.write(reinterpret_cast<char *>(blocks_bitmap->get_bitmap()),
-  //          blocks_bitmap->get_size());
+    std::cout << "File size: " << fd.tellg() / 1024 / 1024 << std::endl;
+
+    delete blocks_bitmap;
+    delete inodes_bitmap;
+    delete inode_table;
+    delete buffer;
+  }
 
   fd.close();
 }
