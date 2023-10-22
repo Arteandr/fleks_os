@@ -5,12 +5,15 @@
 #include <cstddef>
 #include <cstdint>
 class bitmap {
-  byte *bitmap;
   size_t size;
+  u8 *bit_map;
 
 public:
-  void set_bit(size_t position, byte flag);
-  byte get_bit(size_t position);
+  bitmap(size_t count);
+  void set_bit(size_t position, u8 flag);
+  u8 get_bit(size_t position);
+  u8 *get_bitmap();
+  size_t get_size();
 };
 
 #endif // !BITMAP_H

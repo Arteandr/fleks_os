@@ -1,6 +1,8 @@
 #ifndef INODE_H
 #define INODE_H
 
+#define INODE_SIZE 128
+
 #define S_IRUSR 0x0100 // user read
 #define S_IWUSR 0x0080 // user write
 #define S_IXUSR 0x0040 // user execute

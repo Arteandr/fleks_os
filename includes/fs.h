@@ -2,10 +2,12 @@
 #define FS_H
 
 #include "bitmap.h"
+#include "block_group.h"
 #include "inode.h"
 #include "superblock.h"
 #include <fstream>
 #include <string>
+
 #define FS_FILENAME "filesystem"
 
 class FS {
@@ -18,6 +20,7 @@ class FS {
 
 public:
   FS(std::string filename);
+  static void format(size_t fs_size, size_t block_size);
 };
 
 #endif

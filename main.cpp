@@ -1,3 +1,4 @@
+#include "includes/bitmap.h"
 #include "includes/console.h"
 #include "includes/executor.h"
 #include "includes/fs.h"
@@ -42,6 +43,7 @@ void start() {
 
   try {
     fs = new FS(FS_FILENAME);
+    fs->format(32 * 1024 * 1024, 1024);
   } catch (const runtime_error &e) {
     cerr << "[Ошибка] " << e.what() << endl;
     delete fs;
