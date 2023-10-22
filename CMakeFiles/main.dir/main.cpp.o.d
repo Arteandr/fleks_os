@@ -172,9 +172,10 @@ CMakeFiles/main.dir/main.cpp.o: /home/hwndrer/kurs_os/main.cpp \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
  /usr/include/c++/11/bits/fstream.tcc \
  /home/hwndrer/kurs_os/includes/os_status.h \
- /home/hwndrer/kurs_os/includes/superblock.h /usr/include/c++/11/ctime \
- /usr/include/c++/11/iomanip /usr/include/c++/11/locale \
- /usr/include/c++/11/bits/locale_facets_nonio.h \
+ /home/hwndrer/kurs_os/includes/superblock.h \
+ /home/hwndrer/kurs_os/src/utils.hpp /usr/include/c++/11/iomanip \
+ /usr/include/c++/11/locale \
+ /usr/include/c++/11/bits/locale_facets_nonio.h /usr/include/c++/11/ctime \
  /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
  /usr/include/libintl.h /usr/include/c++/11/bits/locale_facets_nonio.tcc \

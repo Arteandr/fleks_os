@@ -4,6 +4,7 @@
 #include "includes/fs.h"
 #include "includes/os_status.h"
 #include "includes/superblock.h"
+#include "src/utils.hpp"
 #include <bits/types/time_t.h>
 #include <cstdio>
 #include <cstdlib>
@@ -18,23 +19,6 @@
 using namespace std;
 
 void clear() { system("clear"); }
-
-std::string current_time() {
-  std::ostringstream oss;
-
-  time_t now = time(0);
-  struct tm timeinfo;
-  localtime_r(&now, &timeinfo);
-  int h = timeinfo.tm_hour;
-  int m = timeinfo.tm_min;
-  int s = timeinfo.tm_sec;
-
-  oss << "[" << std::setfill('0') << std::setw(2) << h << ":"
-      << std::setfill('0') << std::setw(2) << m << ":" << std::setfill('0')
-      << std::setw(2) << s << "]";
-
-  return oss.str();
-}
 
 void start() {
   clear();
@@ -51,7 +35,7 @@ void start() {
 
   bool mainLoop = true;
   while (mainLoop) {
-    std::string curr_time = current_time();
+    std::string curr_time = utils::current_time();
     cout << "\x1B[31m" << curr_time << " " << OS_NAME << "@"
          << "hwndrer"
          << ":~$ \033[0m";
@@ -78,7 +62,7 @@ void install() {
   bool mainLoop = true;
   while (mainLoop) {
     clear();
-    curr_time = current_time();
+    curr_time = utils::current_time();
     if (error.length() > 0)
       std::cout << curr_time << " [ОШИБКА]: " << error << std::endl
                 << std::endl;
@@ -102,7 +86,7 @@ void install() {
 
   while (mainLoop) {
     clear();
-    curr_time = current_time();
+    curr_time = utils::current_time();
     std::cout << curr_time << " Размер файловой системы: " << fs_size << " мб"
               << std::endl
               << std::endl;
@@ -137,7 +121,8 @@ void install() {
     break;
   }
 
-  return FS::format(fs_size * 1024 * 1024, block_size);
+  clear();
+  FS::format(fs_size * 1024 * 1024, block_size);
 }
 
 void logo() {

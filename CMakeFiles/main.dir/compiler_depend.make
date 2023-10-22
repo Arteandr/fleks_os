@@ -12,6 +12,7 @@ CMakeFiles/main.dir/main.cpp.o: main.cpp \
   includes/os_status.h \
   includes/shared.h \
   includes/superblock.h \
+  src/utils.hpp \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
@@ -1009,9 +1010,11 @@ CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp \
   includes/inode.h \
   includes/shared.h \
   includes/superblock.h \
+  src/utils.hpp \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
+  /usr/include/c++/11/array \
   /usr/include/c++/11/backward/binders.h \
   /usr/include/c++/11/bits/alloc_traits.h \
   /usr/include/c++/11/bits/allocator.h \
@@ -1033,12 +1036,16 @@ CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp \
   /usr/include/c++/11/bits/functexcept.h \
   /usr/include/c++/11/bits/functional_hash.h \
   /usr/include/c++/11/bits/hash_bytes.h \
+  /usr/include/c++/11/bits/invoke.h \
   /usr/include/c++/11/bits/ios_base.h \
   /usr/include/c++/11/bits/istream.tcc \
   /usr/include/c++/11/bits/locale_classes.h \
   /usr/include/c++/11/bits/locale_classes.tcc \
+  /usr/include/c++/11/bits/locale_conv.h \
   /usr/include/c++/11/bits/locale_facets.h \
   /usr/include/c++/11/bits/locale_facets.tcc \
+  /usr/include/c++/11/bits/locale_facets_nonio.h \
+  /usr/include/c++/11/bits/locale_facets_nonio.tcc \
   /usr/include/c++/11/bits/localefwd.h \
   /usr/include/c++/11/bits/memoryfwd.h \
   /usr/include/c++/11/bits/move.h \
@@ -1048,8 +1055,10 @@ CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp \
   /usr/include/c++/11/bits/postypes.h \
   /usr/include/c++/11/bits/predefined_ops.h \
   /usr/include/c++/11/bits/ptr_traits.h \
+  /usr/include/c++/11/bits/quoted_string.h \
   /usr/include/c++/11/bits/range_access.h \
   /usr/include/c++/11/bits/specfun.h \
+  /usr/include/c++/11/bits/sstream.tcc \
   /usr/include/c++/11/bits/std_abs.h \
   /usr/include/c++/11/bits/stl_algobase.h \
   /usr/include/c++/11/bits/stl_construct.h \
@@ -1058,10 +1067,13 @@ CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp \
   /usr/include/c++/11/bits/stl_iterator_base_funcs.h \
   /usr/include/c++/11/bits/stl_iterator_base_types.h \
   /usr/include/c++/11/bits/stl_pair.h \
+  /usr/include/c++/11/bits/stl_relops.h \
   /usr/include/c++/11/bits/streambuf.tcc \
   /usr/include/c++/11/bits/streambuf_iterator.h \
   /usr/include/c++/11/bits/string_view.tcc \
   /usr/include/c++/11/bits/stringfwd.h \
+  /usr/include/c++/11/bits/unique_ptr.h \
+  /usr/include/c++/11/bits/uses_allocator.h \
   /usr/include/c++/11/cctype \
   /usr/include/c++/11/cerrno \
   /usr/include/c++/11/clocale \
@@ -1071,6 +1083,7 @@ CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp \
   /usr/include/c++/11/cstdio \
   /usr/include/c++/11/cstdlib \
   /usr/include/c++/11/cstring \
+  /usr/include/c++/11/ctime \
   /usr/include/c++/11/cwchar \
   /usr/include/c++/11/cwctype \
   /usr/include/c++/11/debug/assertions.h \
@@ -1084,14 +1097,17 @@ CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp \
   /usr/include/c++/11/ext/type_traits.h \
   /usr/include/c++/11/fstream \
   /usr/include/c++/11/initializer_list \
+  /usr/include/c++/11/iomanip \
   /usr/include/c++/11/ios \
   /usr/include/c++/11/iosfwd \
   /usr/include/c++/11/iostream \
   /usr/include/c++/11/istream \
   /usr/include/c++/11/limits \
+  /usr/include/c++/11/locale \
   /usr/include/c++/11/new \
   /usr/include/c++/11/ostream \
   /usr/include/c++/11/pstl/pstl_config.h \
+  /usr/include/c++/11/sstream \
   /usr/include/c++/11/stdexcept \
   /usr/include/c++/11/streambuf \
   /usr/include/c++/11/string \
@@ -1109,13 +1125,16 @@ CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp \
   /usr/include/c++/11/tr1/poly_laguerre.tcc \
   /usr/include/c++/11/tr1/riemann_zeta.tcc \
   /usr/include/c++/11/tr1/special_function_util.h \
+  /usr/include/c++/11/tuple \
   /usr/include/c++/11/type_traits \
   /usr/include/c++/11/typeinfo \
+  /usr/include/c++/11/utility \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
   /usr/include/features-time64.h \
   /usr/include/features.h \
+  /usr/include/libintl.h \
   /usr/include/linux/errno.h \
   /usr/include/locale.h \
   /usr/include/math.h \
@@ -1212,7 +1231,9 @@ CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp \
   /usr/include/x86_64-linux-gnu/c++/11/bits/error_constants.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/gthr-default.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/gthr.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
   /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
   /usr/include/x86_64-linux-gnu/gnu/stubs.h \
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -1229,6 +1250,8 @@ CMakeFiles/main.dir/src/fs.cpp.o: src/fs.cpp \
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
 
 /usr/include/x86_64-linux-gnu/bits/iscanonical.h:
+
+/usr/include/x86_64-linux-gnu/bits/fp-logb.h:
 
 /usr/include/c++/11/vector:
 
@@ -1366,30 +1389,6 @@ src/clear.cpp:
 
 /usr/include/c++/11/bits/basic_ios.h:
 
-main.cpp:
-
-/usr/include/c++/11/bits/basic_string.h:
-
-/usr/include/x86_64-linux-gnu/bits/endian.h:
-
-/usr/include/x86_64-linux-gnu/gnu/stubs.h:
-
-/usr/include/c++/11/bits/ios_base.h:
-
-/usr/include/x86_64-linux-gnu/bits/fp-logb.h:
-
-/usr/include/c++/11/bits/unique_ptr.h:
-
-/usr/include/c++/11/ostream:
-
-/usr/include/c++/11/bits/stl_relops.h:
-
-/usr/include/c++/11/bits/hash_bytes.h:
-
-/usr/include/c++/11/bits/move.h:
-
-/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
-
 /usr/include/c++/11/pstl/pstl_config.h:
 
 /usr/include/c++/11/type_traits:
@@ -1448,10 +1447,6 @@ includes/fs.h:
 
 /usr/include/c++/11/bits/invoke.h:
 
-/usr/include/c++/11/bits/cxxabi_init_exception.h:
-
-/usr/include/wchar.h:
-
 /usr/include/alloca.h:
 
 includes/shared.h:
@@ -1459,6 +1454,38 @@ includes/shared.h:
 /usr/include/c++/11/bits/fstream.tcc:
 
 includes/superblock.h:
+
+main.cpp:
+
+/usr/include/c++/11/bits/basic_string.h:
+
+/usr/include/x86_64-linux-gnu/bits/endian.h:
+
+/usr/include/x86_64-linux-gnu/gnu/stubs.h:
+
+/usr/include/c++/11/bits/ios_base.h:
+
+/usr/include/c++/11/bits/unique_ptr.h:
+
+/usr/include/c++/11/ostream:
+
+/usr/include/c++/11/bits/stl_relops.h:
+
+/usr/include/c++/11/bits/hash_bytes.h:
+
+/usr/include/c++/11/bits/move.h:
+
+/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
+
+/usr/include/c++/11/bits/cxxabi_init_exception.h:
+
+/usr/include/wchar.h:
+
+/usr/include/c++/11/bits/istream.tcc:
+
+/usr/include/c++/11/bits/locale_facets.h:
+
+/usr/include/c++/11/bits/exception.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
 
@@ -1507,12 +1534,6 @@ includes/os_status.h:
 /usr/include/c++/11/tr1/special_function_util.h:
 
 /usr/include/c++/11/stdexcept:
-
-/usr/include/c++/11/bits/istream.tcc:
-
-/usr/include/c++/11/bits/locale_facets.h:
-
-/usr/include/c++/11/bits/exception.h:
 
 /usr/include/c++/11/debug/debug.h:
 
@@ -1669,6 +1690,8 @@ includes/bitmap.h:
 /usr/include/x86_64-linux-gnu/bits/wordsize.h:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/atomic_word.h:
+
+src/utils.hpp:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h:
 
