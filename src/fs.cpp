@@ -35,7 +35,7 @@ void FS::log(u32 group_no, std::string message, LogLevel log_level) {
   FS::log(group_prefix + message, log_level);
 }
 
-void FS::log(std::string message, LogLevel log_level) {
+void FS::log(std::string message, LogLevel log_level, bool new_line) {
   std::string current_time = utils::current_time();
   std::string prefix = "", color = "";
 
@@ -55,7 +55,9 @@ void FS::log(std::string message, LogLevel log_level) {
   };
 
   std::cout << color << current_time << " " << prefix << " " << message
-            << "\033[0m" << std::endl;
+            << "\033[0m";
+  if (new_line)
+    std::cout << std::endl;
 }
 
 // fs_size - Размер ФС в байтах

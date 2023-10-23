@@ -64,10 +64,10 @@ void install() {
     clear();
     curr_time = utils::current_time();
     if (error.length() > 0)
-      std::cout << curr_time << " [ОШИБКА]: " << error << std::endl
-                << std::endl;
-    std::cout << curr_time
-              << " Введите размер файловой системы в мегабайтах (min:8): ";
+      FS::log(error, LogLevel::error);
+
+    FS::log("Введите размер файловой системы в мегабайтах (min:8): ",
+            LogLevel::info, false);
     input = Console::prompt();
     if (input->cmd.length() < 1)
       continue;
@@ -87,13 +87,12 @@ void install() {
   while (mainLoop) {
     clear();
     curr_time = utils::current_time();
-    std::cout << curr_time << " Размер файловой системы: " << fs_size << " мб"
-              << std::endl
-              << std::endl;
+    FS::log("Размер файловой системы: \x1B[31m" + std::to_string(fs_size) +
+            " Мбайт\033[0m\n");
     if (error.length() > 0)
-      std::cout << curr_time << " [ОШИБКА]: " << error << std::endl
-                << std::endl;
-    std::cout << curr_time << " Введите размер блока в байтах: ";
+      FS::log(error, LogLevel::error);
+
+    FS::log("Введите размер блока в байтах: ", LogLevel::info, false);
     input = Console::prompt();
     if (input->cmd.length() < 1)
       continue;
@@ -112,7 +111,7 @@ void install() {
         break;
       default:
         error = "Введен неверный размер блока. Допустимые значения: 1024, "
-                "2048, 4096";
+                "2048, 4096.";
         continue;
       }
     }
