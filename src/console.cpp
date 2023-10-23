@@ -33,7 +33,6 @@ void trim(char *str) {
 ConsoleInput *Console::prompt() {
   vector<string> cmd;
   string tmp;
-  bool end = false;
 
   cmd.clear();
   char i[256];

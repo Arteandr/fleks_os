@@ -20,11 +20,11 @@ Executor::Executor() {
 };
 
 Executor::~Executor() {
-  std::map<std::string, Command *>::iterator it = this->cmds.begin(),
-                                             end = this->cmds.end();
+  // std::map<std::string, Command *>::iterator it = this->cmds.begin(),
+  //                                            end = this->cmds.end();
 
-  for (; it != end; ++it)
-    delete it->second;
+  // for (; it != end; ++it)
+  //   delete it->second;
 }
 
 int Executor::execute(std::string cmd, std::vector<std::string> args) {
