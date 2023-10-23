@@ -123,11 +123,14 @@ void install() {
 
   clear();
   FS::format(fs_size * 1024 * 1024, block_size);
+  system("stty raw");
+  getchar();
+  system("stty cooked");
 }
 
 void logo() {
   clear();
-  const char *logo = "  ,-.       _,---._ __  / \\\n"
+  const char *logo = "\x1B[31m  ,-.       _,---._ __  / \\\n"
                      " /  )    .-'       `./ /   \\\n"
                      "(  (   ,'            `/    /|\n"
                      " \\  `-'             \\'\\   / |\n"
@@ -135,13 +138,12 @@ void logo() {
                      "   /`.          ,'-`----Y   |\n"
                      "  (            ;        |   '\n"
                      "  |  ,-.    ,-'         |  /\n"
-                     "  |  | (   |    fleksOS | /\n"
+                     "  |  | (   |    \x1B[35mfleksOS\x1B[31m | /\n"
                      "  )  |  \\  `.___________|/\n"
-                     "  `--'   `--'\n";
+                     "  `--'   `--'\n\033[0m";
 
-  cout << logo << std::endl
-       << std::endl
-       << "Для продолжения нажмите любую кнопку...";
+  cout << logo << std::endl << std::endl;
+  cout << "\x1B[35mДля продолжения нажмите любую кнопку...\033[0m";
   system("stty raw");
   getchar();
   system("stty cooked");

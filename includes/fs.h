@@ -21,16 +21,16 @@ class FS {
   inode *inode_table;
 
 private:
-  static void log(std::string message, LogLevel log_level = LogLevel::info);
-  static void log(u32 group_no, std::string message,
-                  LogLevel log_level = LogLevel::info);
-  static void log(u32 block_no, u32 group_no, std::string message,
-                  LogLevel log_level = LogLevel::info);
   static void debug(std::string message);
 
 public:
   FS(std::string filename);
   static void format(size_t fs_size, size_t block_size);
+  static void log(std::string message, LogLevel log_level = LogLevel::info);
+  static void log(u32 group_no, std::string message,
+                  LogLevel log_level = LogLevel::info);
+  static void log(u32 block_no, u32 group_no, std::string message,
+                  LogLevel log_level = LogLevel::info);
 };
 
 #endif

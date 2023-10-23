@@ -45,11 +45,11 @@ void FS::log(std::string message, LogLevel log_level) {
     color = "\x1B[32m";
     break;
   case LogLevel::warning:
-    prefix = "[info]";
+    prefix = "[warning]";
     color = "\x1B[33m";
     break;
   case LogLevel::error:
-    prefix = "[info]";
+    prefix = "[error]";
     color = "\x1B[31m";
     break;
   };
@@ -204,6 +204,7 @@ void FS::format(size_t fs_size, size_t block_size) {
            sizeof(group_desc) * groups_count);
 
   FS::log("Файловая система успешно установлена");
+  FS::debug("Для продолжения нажмите любую кнопку...");
 
   fd.close();
 }
