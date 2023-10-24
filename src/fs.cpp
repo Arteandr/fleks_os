@@ -23,6 +23,7 @@ FS::FS(std::string filename) {
 }
 
 void FS::debug(std::string message) { FS::log(message, LogLevel::warning); }
+
 void FS::log(u32 block_no, u32 group_no, std::string message,
              LogLevel log_level) {
   std::string group_prefix = "[group: " + std::to_string(group_no) + "] ";
@@ -198,10 +199,7 @@ void FS::format(size_t fs_size, size_t block_size) {
   }
 
   fd.seekg(block_size * 1, std::ios::beg);
-  FS::log("Запись таблицы дескрипторов групп");
-  // fd.write(reinterpret_cast<char *>(&group_desc_table),
-  //          sizeof(*group_desc_table));
-
+  FS::log(1, 1, "Запись таблицы дескрипторов групп");
   fd.write(reinterpret_cast<char *>(&group_desc_table),
            sizeof(group_desc) * groups_count);
 
