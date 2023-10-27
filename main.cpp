@@ -28,7 +28,7 @@ void start() {
   try {
     fs = new FS(FS_FILENAME);
   } catch (const runtime_error &e) {
-    cerr << "[Ошибка] " << e.what() << endl;
+    FS::log(e.what(), LogLevel::error);
     delete fs;
     return;
   }
@@ -157,9 +157,9 @@ int main() {
     cout << "\x1B[31m"
          << "Доступные действия: "
          << "\033[0m" << endl;
-    cout << "1 - Запустить систему" << endl;
-    cout << "2 - Выполнить установку системы" << endl;
-    cout << "3 - Выход" << endl << endl;
+    cout << "\x1B[35m[1] Запустить систему\033[0m" << endl;
+    cout << "\x1B[35m[2] Выполнить установку системы\033[0m" << endl;
+    cout << "\x1B[35m[3] Выход\033[0m" << endl << endl;
     cout << "\x1B[31m"
          << "Ваш выбор: "
          << "\033[0m";

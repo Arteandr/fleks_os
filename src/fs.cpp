@@ -11,54 +11,28 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <sys/mman.h>
 #include <sys/types.h>
 
 FS::FS(std::string filename) {
   this->fd.open(filename.c_str(),
-                std::ios::out | std::ios::binary | std::ios::app);
+                std::ios::in | std::ios::out | std::ios::binary);
   if (!this->fd.is_open()) {
     std::string error = "Ошибка при открытии файла ФС - \"" + filename + "\"";
     throw std::runtime_error(error);
   }
-}
 
-void FS::debug(std::string message) { FS::log(message, LogLevel::warning); }
-
-void FS::log(u32 block_no, u32 group_no, std::string message,
-             LogLevel log_level) {
-  std::string group_prefix = "[group: " + std::to_string(group_no) + "] ";
-  std::string block_prefix = "[block: " + std::to_string(block_no) + "] ";
-  FS::log(group_prefix + block_prefix + message, log_level);
-}
-
-void FS::log(u32 group_no, std::string message, LogLevel log_level) {
-  std::string group_prefix = "[group: " + std::to_string(group_no) + "] ";
-  FS::log(group_prefix + message, log_level);
-}
-
-void FS::log(std::string message, LogLevel log_level, bool new_line) {
-  std::string current_time = utils::current_time();
-  std::string prefix = "", color = "";
-
-  switch (log_level) {
-  case LogLevel::info:
-    prefix = "[info]";
-    color = "\x1B[32m";
-    break;
-  case LogLevel::warning:
-    prefix = "[warning]";
-    color = "\x1B[33m";
-    break;
-  case LogLevel::error:
-    prefix = "[error]";
-    color = "\x1B[31m";
-    break;
-  };
-
-  std::cout << color << current_time << " " << prefix << " " << message
-            << "\033[0m";
-  if (new_line)
-    std::cout << std::endl;
+  // Читаем суперблок
+  super_block sb;
+  if (!this->fd.read(reinterpret_cast<char *>(&sb), sizeof(sb))) {
+    FS::log("Ошибка чтения суперблока", LogLevel::error);
+    return;
+  }
+  if (sb.s_magic != SUPER_MAGIC) {
+    FS::log("Магическое число задано неверно", LogLevel::error);
+    return;
+  }
+  this->superblock = &sb;
 }
 
 // fs_size - Размер ФС в байтах
@@ -82,14 +56,14 @@ void FS::format(size_t fs_size, size_t block_size) {
   FS::log("Общее количестов inode: " + std::to_string(inodes_count));
 
   FS::log("Инициализирование суперблока");
-  super_block *sb = new super_block;
-  sb->s_inodes_count = inodes_count;
-  sb->s_blocks_count = blocks_count;
-  sb->s_free_indes_count = inodes_count;
-  sb->s_block_size = block_size;
-  sb->s_blocks_per_group = BLOCKS_PER_GROUP;
-  sb->s_inodes_per_group = inodes_per_group;
-  sb->s_magic = SUPER_MAGIC;
+  super_block sb;
+  sb.s_inodes_count = inodes_count;
+  sb.s_blocks_count = blocks_count;
+  sb.s_free_indes_count = inodes_count;
+  sb.s_block_size = block_size;
+  sb.s_blocks_per_group = BLOCKS_PER_GROUP;
+  sb.s_inodes_per_group = inodes_per_group;
+  sb.s_magic = SUPER_MAGIC;
 
   FS::log("Инициализирование таблицы описателей групп");
   group_desc *group_desc_table =
@@ -126,7 +100,7 @@ void FS::format(size_t fs_size, size_t block_size) {
       FS::log(cursor(group_no, start_blocks_count, remaining_blocks) /
                   block_size,
               group_no, "Запись суперблока");
-      if (!fd.write(reinterpret_cast<char *>(&sb), sizeof(*sb))) {
+      if (!fd.write(reinterpret_cast<char *>(&sb), sizeof(super_block))) {
         FS::log(group_no, "Ошибка записи суперблока", LogLevel::error);
         return;
       }
@@ -146,6 +120,10 @@ void FS::format(size_t fs_size, size_t block_size) {
     group_desc_table[group_no - 1].bg_block_bitmap =
         cursor(group_no, start_blocks_count, remaining_blocks) / block_size;
     remaining_blocks -= 1;
+    FS::log(group_no, "Запись блока block_bitmap: " +
+                          std::to_string(cursor(group_no, start_blocks_count,
+                                                remaining_blocks) /
+                                         block_size));
 
     bitmap *inodes_bitmap = new bitmap(inodes_per_group);
     fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks),
@@ -200,11 +178,57 @@ void FS::format(size_t fs_size, size_t block_size) {
 
   fd.seekg(block_size * 1, std::ios::beg);
   FS::log(1, 1, "Запись таблицы дескрипторов групп");
-  fd.write(reinterpret_cast<char *>(&group_desc_table),
-           sizeof(group_desc) * groups_count);
+  for (size_t i = 0; i < groups_count; ++i) {
+    FS::log(1, 1, "Запись дескриптора для группы №" + std::to_string(i));
+    if (!fd.write(reinterpret_cast<char *>(&group_desc_table[i]),
+                  sizeof(group_desc))) {
+      FS::log(0, "Ошибка записи таблицы дескрипторов групп", LogLevel::error);
+      FS::log(strerror(errno), LogLevel::error);
+      return;
+    }
+  }
 
   FS::log("Файловая система успешно установлена");
   FS::debug("Для продолжения нажмите любую кнопку...");
 
   fd.close();
+}
+
+void FS::debug(std::string message) { FS::log(message, LogLevel::warning); }
+
+void FS::log(u32 block_no, u32 group_no, std::string message,
+             LogLevel log_level) {
+  std::string group_prefix = "[group: " + std::to_string(group_no) + "] ";
+  std::string block_prefix = "[block: " + std::to_string(block_no) + "] ";
+  FS::log(group_prefix + block_prefix + message, log_level);
+}
+
+void FS::log(u32 group_no, std::string message, LogLevel log_level) {
+  std::string group_prefix = "[group: " + std::to_string(group_no) + "] ";
+  FS::log(group_prefix + message, log_level);
+}
+
+void FS::log(std::string message, LogLevel log_level, bool new_line) {
+  std::string current_time = utils::current_time();
+  std::string prefix = "", color = "";
+
+  switch (log_level) {
+  case LogLevel::info:
+    prefix = "[info]";
+    color = "\x1B[32m";
+    break;
+  case LogLevel::warning:
+    prefix = "[warning]";
+    color = "\x1B[33m";
+    break;
+  case LogLevel::error:
+    prefix = "[error]";
+    color = "\x1B[31m";
+    break;
+  };
+
+  std::cout << color << current_time << " " << prefix << " " << message
+            << "\033[0m";
+  if (new_line)
+    std::cout << std::endl;
 }
