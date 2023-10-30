@@ -14,6 +14,7 @@ public:
   u8 get_bit(size_t position);
   u8 *get_bitmap();
   size_t get_size();
+  size_t search_free();
 };
 
 #endif // !BITMAP_H

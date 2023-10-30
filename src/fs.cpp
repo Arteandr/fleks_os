@@ -140,16 +140,17 @@ void FS::format(size_t fs_size, size_t block_size) {
         cursor(group_no, start_blocks_count, remaining_blocks) / block_size;
     remaining_blocks -= 1;
 
-    inode *inode_table = (inode *)malloc(inodes_per_group);
+    inode *inode_table = (inode *)calloc(inodes_per_group, sizeof(inode));
     fd.seekg(cursor(group_no, start_blocks_count, remaining_blocks),
              std::ios::beg);
     FS::log(cursor(group_no, start_blocks_count, remaining_blocks) / block_size,
             group_no, "Запись таблицы inode");
-    if (!fd.write(reinterpret_cast<char *>(&inode_table),
-                  sizeof(*inode_table))) {
-      FS::log(group_no, "Ошибка записи таблицы inode", LogLevel::error);
-      FS::log(strerror(errno), LogLevel::error);
-      return;
+    for (int i = 0; i < inodes_per_group; ++i) {
+      if (!fd.write(reinterpret_cast<char *>(&inode_table[i]), sizeof(inode))) {
+        FS::log(group_no, "Ошибка записи таблицы inode", LogLevel::error);
+        FS::log(strerror(errno), LogLevel::error);
+        return;
+      }
     }
 
     group_desc_table[group_no - 1].bg_inode_table =
