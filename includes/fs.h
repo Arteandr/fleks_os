@@ -12,6 +12,13 @@
 
 enum class LogLevel { info, warning, error };
 
+struct fs_obs {
+  bool empty;
+  bool exist;
+  u8 *block;
+  u16 block_no;
+};
+
 class FS {
   std::fstream fd;
 
@@ -32,6 +39,8 @@ public:
                   LogLevel log_level = LogLevel::info);
   static void log(u32 block_no, u32 group_no, std::string message,
                   LogLevel log_level = LogLevel::info);
+
+  void info();
 };
 
 #endif

@@ -33,6 +33,19 @@ FS::FS(std::string filename) {
     return;
   }
   this->superblock = &sb;
+  const u8 groups_count =
+      this->superblock->s_blocks_count / this->superblock->s_blocks_per_group;
+
+  // Читаем GDT
+  group_desc *gdt = new group_desc[groups_count];
+  fd.seekg(this->superblock->s_block_size * 1);
+  for (size_t i = 0; i < groups_count; ++i) {
+    group_desc gd;
+    fd.read(reinterpret_cast<char *>(&gd), sizeof(gd));
+    gdt[i] = gd;
+  }
+
+  this->info();
 }
 
 // fs_size - Размер ФС в байтах
@@ -119,6 +132,10 @@ void FS::format(size_t fs_size, size_t block_size) {
     }
     group_desc_table[group_no - 1].bg_block_bitmap =
         cursor(group_no, start_blocks_count, remaining_blocks) / block_size;
+    FS::log(group_no, "Запись bg_block_bitmap: " +
+                          std::to_string(cursor(group_no, start_blocks_count,
+                                                remaining_blocks) /
+                                         block_size));
     remaining_blocks -= 1;
     FS::log(group_no, "Запись блока block_bitmap: " +
                           std::to_string(cursor(group_no, start_blocks_count,
@@ -136,8 +153,13 @@ void FS::format(size_t fs_size, size_t block_size) {
 
     FS::log(cursor(group_no, start_blocks_count, remaining_blocks) / block_size,
             group_no, "] Запись битовой карты inode");
+
     group_desc_table[group_no - 1].bg_inode_bitmap =
         cursor(group_no, start_blocks_count, remaining_blocks) / block_size;
+    FS::log(group_no, "Запись bg_inode_bitmap: " +
+                          std::to_string(cursor(group_no, start_blocks_count,
+                                                remaining_blocks) /
+                                         block_size));
     remaining_blocks -= 1;
 
     inode *inode_table = (inode *)calloc(inodes_per_group, sizeof(inode));
@@ -155,6 +177,10 @@ void FS::format(size_t fs_size, size_t block_size) {
 
     group_desc_table[group_no - 1].bg_inode_table =
         cursor(group_no, start_blocks_count, remaining_blocks) / block_size;
+    FS::log(group_no, "Запись bg_inode_table: " +
+                          std::to_string(cursor(group_no, start_blocks_count,
+                                                remaining_blocks) /
+                                         block_size));
     remaining_blocks -= 1;
 
     FS::log(cursor(group_no, start_blocks_count, remaining_blocks) / block_size,
@@ -181,6 +207,8 @@ void FS::format(size_t fs_size, size_t block_size) {
   FS::log(1, 1, "Запись таблицы дескрипторов групп");
   for (size_t i = 0; i < groups_count; ++i) {
     FS::log(1, 1, "Запись дескриптора для группы №" + std::to_string(i));
+    FS::debug("BG_INODE_TABLE: " +
+              std::to_string(group_desc_table[i].bg_inode_table));
     if (!fd.write(reinterpret_cast<char *>(&group_desc_table[i]),
                   sizeof(group_desc))) {
       FS::log(0, "Ошибка записи таблицы дескрипторов групп", LogLevel::error);
@@ -232,4 +260,26 @@ void FS::log(std::string message, LogLevel log_level, bool new_line) {
             << "\033[0m";
   if (new_line)
     std::cout << std::endl;
+}
+
+void FS::info() {
+  if (this->superblock == nullptr)
+    return;
+
+  FS::log("Информация о системе");
+  FS::log("Общее количество inode - " +
+          std::to_string(this->superblock->s_inodes_count));
+  FS::log("Общее количество блоков - " +
+          std::to_string(this->superblock->s_blocks_count));
+  FS::log("Количество свободных inode - " +
+          std::to_string(this->superblock->s_free_indes_count));
+  FS::log("Размер блока - " + std::to_string(this->superblock->s_block_size));
+  FS::log("Количество блоков в группе - " +
+          std::to_string(this->superblock->s_blocks_per_group));
+  FS::log("Первый блок данных - " +
+          std::to_string(this->superblock->s_first_data_block));
+  FS::log("Количество inode в группе - " +
+          std::to_string(this->superblock->s_inodes_per_group));
+  FS::log("Магическое число - " + std::to_string(this->superblock->s_magic));
+  std::cout << std::endl;
 }
