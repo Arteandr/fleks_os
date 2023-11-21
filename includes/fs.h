@@ -23,15 +23,15 @@ class FS {
   std::fstream fd;
 
   super_block *superblock;
-  bitmap *block_bitmap;
-  bitmap *inode_bitmap;
-  inode *inode_table;
+  group_desc *gdt;
 
 private:
   static void debug(std::string message);
 
 public:
   FS(std::string filename);
+  bitmap *get_block_bitmap(size_t group_no);
+  u32 allocate_block();
   static void format(size_t fs_size, size_t block_size);
   static void log(std::string message, LogLevel log_level = LogLevel::info,
                   bool new_line = true);

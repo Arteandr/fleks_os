@@ -1,7 +1,18 @@
 #include "../includes/bitmap.h"
+#include <cstdlib>
+#include <cstring>
 
 bitmap::bitmap(size_t count) {
-  this->bit_map = new u8[count / 8];
+  // this->bit_map = new u8[count / 8];
+  this->bit_map = (u8 *)calloc(count / 8, sizeof(u8));
+  this->set_bit(0, true);
+  this->size = count / 8;
+}
+
+bitmap::bitmap(char *buffer, size_t count) {
+  // this->bit_map = new u8[count / 8];
+  this->bit_map = (u8 *)calloc(count / 8, sizeof(u8));
+  memcpy(this->bit_map, buffer, count / 8);
   this->set_bit(0, true);
   this->size = count / 8;
 }
