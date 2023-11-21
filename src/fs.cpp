@@ -45,6 +45,8 @@ FS::FS(std::string filename) {
     gdt[i] = gd;
   }
 
+  this->log("Файловая система успешно запущена");
+  std::cout << std::endl;
   this->info();
 }
 
@@ -267,6 +269,10 @@ void FS::info() {
     return;
 
   FS::log("Информация о системе");
+  FS::log("Общий размер ФС: " +
+          std::to_string(this->superblock->s_blocks_count *
+                         this->superblock->s_block_size) +
+          " байт");
   FS::log("Общее количество inode - " +
           std::to_string(this->superblock->s_inodes_count));
   FS::log("Общее количество блоков - " +
