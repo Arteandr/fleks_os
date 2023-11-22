@@ -30,7 +30,8 @@ private:
 
 public:
   FS(std::string filename);
-  bitmap *get_block_bitmap(size_t group_no);
+  bool set_block_bitmap(size_t block_group_no, bitmap *bm);
+  bitmap *get_block_bitmap(size_t block_group_no);
   u32 allocate_block();
   static void format(size_t fs_size, size_t block_size);
   static void log(std::string message, LogLevel log_level = LogLevel::info,

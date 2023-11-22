@@ -46,7 +46,9 @@ FS::FS(std::string filename) {
   }
   this->gdt = gdt;
 
-  std::cout << "ALLOCATED BLOCK NUMBER: " << this->allocate_block();
+  this->allocate_block();
+  this->allocate_block();
+  this->allocate_block();
 
   this->log("Файловая система успешно запущена");
   std::cout << std::endl;
@@ -133,7 +135,7 @@ void FS::format(size_t fs_size, size_t block_size) {
     FS::debug("Размер битовой карты блоков: " +
               std::to_string(blocks_bitmap->get_size()));
     if (!fd.write(reinterpret_cast<char *>((blocks_bitmap->get_bitmap())),
-                  blocks_bitmap->get_size())) {
+                  sizeof(blocks_bitmap->get_bitmap()))) {
       FS::log(group_no, "Ошибка записи битовой карты блоков", LogLevel::error);
       return;
     }
@@ -241,19 +243,41 @@ bitmap *FS::get_block_bitmap(size_t block_group_no) {
   return bm;
 }
 
+bool FS::set_block_bitmap(size_t block_group_no, bitmap *bm) {
+  const group_desc &group = this->gdt[block_group_no];
+  fd.seekg(group.bg_block_bitmap * this->superblock->s_block_size,
+           std::ios::beg);
+  if (!fd.write(reinterpret_cast<char *>(bm->get_bitmap()),
+                sizeof(bm->get_bitmap())))
+    return false;
+
+  return true;
+}
+
 u32 FS::allocate_block() {
+  FS::debug("Block allocation started");
   const size_t groups_count =
       this->superblock->s_blocks_count / this->superblock->s_block_size;
-  u32 block_no;
+  size_t block_no;
+  size_t group_no;
   bitmap *bm;
   for (size_t i = 0; i < groups_count; ++i) {
     bm = this->get_block_bitmap(i);
     block_no = bm->search_free();
-    if (block_no)
+    FS::debug("Free block found: " + std::to_string(block_no));
+    if (block_no > 0) {
+      group_no = i;
       break;
+    }
   }
-  bm->set_bit(block_no, true);
 
+  bm->set_bit(block_no, true);
+  if (!this->set_block_bitmap(group_no, bm)) {
+    FS::log(group_no, "Битовая карта блоков поврежденна", LogLevel::error);
+    return 0;
+  }
+
+  FS::debug("Block allocation end");
   return block_no;
 }
 
