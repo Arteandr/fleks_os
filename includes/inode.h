@@ -18,7 +18,7 @@
 #define BLOCKS_COUNT 15 // Количество блоков адресации
 
 #include "shared.h"
-typedef struct {
+typedef struct inode {
   u16 i_mode; // Формат && права файла
   u16 i_uid;
   u32 i_size;  // Размер файла в байтах

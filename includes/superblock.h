@@ -2,6 +2,7 @@
 #define SUPERBLOCK_H
 
 #include "shared.h"
+#include <iostream>
 #define SUPER_OFFSET 1024 // Смещение суперблока
 #define SUPER_MAGIC 0xEF53
 

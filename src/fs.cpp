@@ -1,6 +1,7 @@
 #include "../includes/fs.h"
 #include "../includes/superblock.h"
 #include "utils.hpp"
+#include <algorithm>
 #include <cerrno>
 #include <cmath>
 #include <cstdio>
@@ -23,16 +24,16 @@ FS::FS(std::string filename) {
   }
 
   // Читаем суперблок
-  super_block sb;
-  if (!this->fd.read(reinterpret_cast<char *>(&sb), sizeof(sb))) {
+  super_block *sb = new super_block;
+  if (!this->fd.read(reinterpret_cast<char *>(sb), sizeof(super_block))) {
     FS::log("Ошибка чтения суперблока", LogLevel::error);
     return;
   }
-  if (sb.s_magic != SUPER_MAGIC) {
+  if (sb->s_magic != SUPER_MAGIC) {
     FS::log("Магическое число задано неверно", LogLevel::error);
     return;
   }
-  this->superblock = &sb;
+  this->superblock = sb;
   const u8 groups_count =
       this->superblock->s_blocks_count / this->superblock->s_blocks_per_group;
 
@@ -45,10 +46,6 @@ FS::FS(std::string filename) {
     gdt[i] = gd;
   }
   this->gdt = gdt;
-
-  this->allocate_block();
-  this->allocate_block();
-  this->allocate_block();
 
   this->log("Файловая система успешно запущена");
   std::cout << std::endl;
@@ -176,7 +173,7 @@ void FS::format(size_t fs_size, size_t block_size) {
              std::ios::beg);
     FS::log(cursor(group_no, start_blocks_count, remaining_blocks) / block_size,
             group_no, "Запись таблицы inode");
-    for (int i = 0; i < inodes_per_group; ++i) {
+    for (size_t i = 0; i < inodes_per_group; ++i) {
       if (!fd.write(reinterpret_cast<char *>(&inode_table[i]), sizeof(inode))) {
         FS::log(group_no, "Ошибка записи таблицы inode", LogLevel::error);
         FS::log(strerror(errno), LogLevel::error);
@@ -226,10 +223,19 @@ void FS::format(size_t fs_size, size_t block_size) {
     }
   }
 
+  fd.close();
+
+  FS *fs = new FS(FS_FILENAME);
+  size_t block_no = fs->allocate_block();
+  inode *i_node = new inode;
+  i_node->i_block[0] = block_no;
+  i_node->i_blocks = 1;
+  i_node->i_mode = S_IROTH | S_IRUSR | S_IWUSR | S_IXUSR;
+  i_node->i_uid = 0;
+  i_node->i_size = fs->superblock->s_block_size;
+
   FS::log("Файловая система успешно установлена");
   FS::debug("Для продолжения нажмите любую кнопку...");
-
-  fd.close();
 }
 
 bitmap *FS::get_block_bitmap(size_t block_group_no) {
@@ -247,8 +253,11 @@ bool FS::set_block_bitmap(size_t block_group_no, bitmap *bm) {
   const group_desc &group = this->gdt[block_group_no];
   fd.seekg(group.bg_block_bitmap * this->superblock->s_block_size,
            std::ios::beg);
-  if (!fd.write(reinterpret_cast<char *>(bm->get_bitmap()),
-                sizeof(bm->get_bitmap())))
+  std::cout << "CURSOR: "
+            << group.bg_block_bitmap * this->superblock->s_block_size
+            << std::endl;
+  std::cout << "BITMAP: " << (int)*bm->get_bitmap() << std::endl;
+  if (!fd.write(reinterpret_cast<char *>(bm->get_bitmap()), bm->get_size()))
     return false;
 
   return true;
@@ -264,13 +273,13 @@ u32 FS::allocate_block() {
   for (size_t i = 0; i < groups_count; ++i) {
     bm = this->get_block_bitmap(i);
     block_no = bm->search_free();
-    FS::debug("Free block found: " + std::to_string(block_no));
     if (block_no > 0) {
       group_no = i;
       break;
     }
   }
-
+  FS::debug("Группа: " + std::to_string(group_no));
+  FS::debug("Выделенный блок: " + std::to_string(block_no));
   bm->set_bit(block_no, true);
   if (!this->set_block_bitmap(group_no, bm)) {
     FS::log(group_no, "Битовая карта блоков поврежденна", LogLevel::error);
