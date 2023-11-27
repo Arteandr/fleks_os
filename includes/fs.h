@@ -3,6 +3,7 @@
 
 #include "bitmap.h"
 #include "block_group.h"
+#include "dentry.h"
 #include "inode.h"
 #include "superblock.h"
 #include <fstream>
@@ -26,13 +27,23 @@ class FS {
   group_desc *gdt;
 
 private:
+  // TODO: rework group_no to u32
   static void debug(std::string message);
+  u32 create_inode(u32 group_no, u32 inode_no, inode *inode);
+  bitmap *get_block_bitmap(size_t block_group_no);
+  bitmap *get_inode_bitmap(size_t group_no);
+  inode *get_inode_table(u32 group_no);
+  bool set_block_bitmap(size_t block_group_no, bitmap *bm);
+  bool set_inode_bitmap(size_t group_no, bitmap *bm);
+  bool set_inode_table(u32 group_no, inode *inode_table);
 
 public:
   FS(std::string filename);
-  bool set_block_bitmap(size_t block_group_no, bitmap *bm);
-  bitmap *get_block_bitmap(size_t block_group_no);
-  u32 allocate_block();
+  std::pair<u32, u32> allocate_block();
+  void write_block(u32 group_no, inode *i, u32 block_no, char *buffer);
+  void make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
+                            inode *i);
+  dentry *make_directory_block();
   static void format(size_t fs_size, size_t block_size);
   static void log(std::string message, LogLevel log_level = LogLevel::info,
                   bool new_line = true);

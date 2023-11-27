@@ -1,4 +1,5 @@
 #include "../includes/fs.h"
+#include "../includes/dentry.h"
 #include "../includes/superblock.h"
 #include "utils.hpp"
 #include <algorithm>
@@ -10,6 +11,8 @@
 #include <fstream>
 #include <ios>
 #include <iostream>
+#include <iterator>
+#include <pstl/glue_execution_defs.h>
 #include <stdexcept>
 #include <string>
 #include <sys/mman.h>
@@ -187,7 +190,7 @@ void FS::format(size_t fs_size, size_t block_size) {
                           std::to_string(cursor(group_no, start_blocks_count,
                                                 remaining_blocks) /
                                          block_size));
-    remaining_blocks -= 1;
+    remaining_blocks -= (inodes_per_group * sizeof(inode)) / block_size;
 
     FS::log(cursor(group_no, start_blocks_count, remaining_blocks) / block_size,
             group_no, "Начало записи блоков данных");
@@ -226,16 +229,60 @@ void FS::format(size_t fs_size, size_t block_size) {
   fd.close();
 
   FS *fs = new FS(FS_FILENAME);
-  size_t block_no = fs->allocate_block();
-  inode *i_node = new inode;
-  i_node->i_block[0] = block_no;
-  i_node->i_blocks = 1;
-  i_node->i_mode = S_IROTH | S_IRUSR | S_IWUSR | S_IXUSR;
-  i_node->i_uid = 0;
-  i_node->i_size = fs->superblock->s_block_size;
+  auto [group_no, block_no] = fs->allocate_block();
+  inode *root = new inode;
+  root->i_block[0] = block_no;
+  root->i_blocks = 1;
+  root->i_mode = S_IROTH | S_IRUSR | S_IWUSR | S_IXUSR;
+  root->i_uid = 0;
+  root->i_size = fs->superblock->s_block_size;
+  fs->make_empty_directory(group_no, 1, 1, root);
+  fs->create_inode(group_no, 1, root);
 
   FS::log("Файловая система успешно установлена");
   FS::debug("Для продолжения нажмите любую кнопку...");
+}
+
+u32 FS::create_inode(u32 group_no, u32 inode_no, inode *i) {
+  bitmap *inode_bitmap = this->get_inode_bitmap(group_no);
+  if (inode_bitmap->get_bit(inode_no))
+    return 0;
+
+  inode *inode_table = this->get_inode_table(group_no);
+  inode_bitmap->set_bit(inode_no, true);
+  inode_table[inode_no] = *i;
+  std::cout << "SIZE INODE: " << sizeof(inode);
+
+  this->set_inode_bitmap(group_no, inode_bitmap);
+  this->set_inode_table(group_no, inode_table);
+
+  return inode_no;
+}
+
+inode *FS::get_inode_table(u32 group_no) {
+  const group_desc &group = this->gdt[group_no];
+  fd.seekg(group.bg_inode_table * this->superblock->s_block_size,
+           std::ios::beg);
+  inode *inode_table =
+      (inode *)calloc(this->superblock->s_inodes_per_group, sizeof(inode));
+  if (!this->fd.read(reinterpret_cast<char *>(inode_table),
+                     this->superblock->s_inodes_per_group * sizeof(inode))) {
+    log("Ошибка при чтении таблицы inode", LogLevel::error);
+    return nullptr;
+  }
+
+  return inode_table;
+}
+
+bitmap *FS::get_inode_bitmap(size_t group_no) {
+  const group_desc &group = this->gdt[group_no];
+  fd.seekg(group.bg_inode_bitmap * this->superblock->s_block_size,
+           std::ios::beg);
+  char *buffer = new char[this->superblock->s_block_size];
+  fd.read(buffer, this->superblock->s_block_size);
+  bitmap *bm = new bitmap(buffer, this->superblock->s_blocks_per_group);
+
+  return bm;
 }
 
 bitmap *FS::get_block_bitmap(size_t block_group_no) {
@@ -249,21 +296,38 @@ bitmap *FS::get_block_bitmap(size_t block_group_no) {
   return bm;
 }
 
-bool FS::set_block_bitmap(size_t block_group_no, bitmap *bm) {
-  const group_desc &group = this->gdt[block_group_no];
-  fd.seekg(group.bg_block_bitmap * this->superblock->s_block_size,
+bool FS::set_inode_table(u32 group_no, inode *inode_table) {
+  const group_desc &group = this->gdt[group_no];
+  fd.seekg(group.bg_inode_table * this->superblock->s_block_size,
            std::ios::beg);
-  std::cout << "CURSOR: "
-            << group.bg_block_bitmap * this->superblock->s_block_size
-            << std::endl;
-  std::cout << "BITMAP: " << (int)*bm->get_bitmap() << std::endl;
+  if (!fd.write(reinterpret_cast<char *>(inode_table),
+                this->superblock->s_inodes_per_group * sizeof(inode)))
+    return false;
+
+  return true;
+}
+
+bool FS::set_inode_bitmap(size_t group_no, bitmap *bm) {
+  const group_desc &group = this->gdt[group_no];
+  fd.seekg(group.bg_inode_bitmap * this->superblock->s_block_size,
+           std::ios::beg);
   if (!fd.write(reinterpret_cast<char *>(bm->get_bitmap()), bm->get_size()))
     return false;
 
   return true;
 }
 
-u32 FS::allocate_block() {
+bool FS::set_block_bitmap(size_t group_no, bitmap *bm) {
+  const group_desc &group = this->gdt[group_no];
+  fd.seekg(group.bg_block_bitmap * this->superblock->s_block_size,
+           std::ios::beg);
+  if (!fd.write(reinterpret_cast<char *>(bm->get_bitmap()), bm->get_size()))
+    return false;
+
+  return true;
+}
+
+std::pair<u32, u32> FS::allocate_block() {
   FS::debug("Block allocation started");
   const size_t groups_count =
       this->superblock->s_blocks_count / this->superblock->s_block_size;
@@ -283,11 +347,83 @@ u32 FS::allocate_block() {
   bm->set_bit(block_no, true);
   if (!this->set_block_bitmap(group_no, bm)) {
     FS::log(group_no, "Битовая карта блоков поврежденна", LogLevel::error);
-    return 0;
+    return {};
   }
 
+  const group_desc &group = this->gdt[group_no];
   FS::debug("Block allocation end");
-  return block_no;
+  return {group_no, group.bg_inode_table + block_no};
+}
+
+dentry *FS::make_directory_block() {
+  // dentry *directories =
+  //     new dentry[this->superblock->s_block_size / sizeof(dentry)];
+  dentry *directories = (dentry *)calloc(
+      this->superblock->s_block_size / sizeof(dentry), sizeof(dentry));
+
+  dentry *empty_directory = new dentry;
+  empty_directory->inode = 0;
+  empty_directory->file_type = FILE_TYPE_UNKNOWN;
+  empty_directory->name_len = 0;
+  empty_directory->rec_len = sizeof(dentry);
+
+  for (size_t i = 0; i < (this->superblock->s_block_size / sizeof(dentry)); ++i)
+    directories[i] = *empty_directory;
+
+  delete empty_directory;
+  return directories;
+}
+
+void FS::make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
+                              inode *i) {
+  dentry *current_directory = new dentry();
+  current_directory->inode = inode_no;
+  current_directory->file_type = FILE_TYPE_DIR;
+  current_directory->name_len = 1;
+  current_directory->rec_len = sizeof(dentry);
+  memcpy(current_directory->name, ".", 1);
+
+  dentry *parent_directory = new dentry();
+  parent_directory->inode = parent_inode_no;
+  parent_directory->file_type = FILE_TYPE_DIR;
+  parent_directory->name_len = 2;
+  parent_directory->rec_len = sizeof(dentry);
+  memcpy(parent_directory->name, "..", 2);
+
+  dentry *directories = make_directory_block();
+
+  directories[0] = *current_directory;
+  directories[1] = *parent_directory;
+  this->write_block(group_no, i, 0, reinterpret_cast<char *>(directories));
+
+  delete[] directories;
+  delete current_directory;
+  delete parent_directory;
+}
+
+void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
+  bitmap *bm = this->get_block_bitmap(group_no);
+  if (bm->get_bit(i->i_block[block_no])) {
+    log("Попытка записать в занятый блок", LogLevel::error);
+    return;
+  }
+  if (!this->fd.is_open()) {
+    log("Ошибка при записи в блок: " + std::to_string(block_no),
+        LogLevel::error);
+    return;
+  }
+
+  this->fd.seekg(block_no == 0
+                     ? 5 * this->superblock->s_block_size
+                     : i->i_block[block_no] * this->superblock->s_block_size,
+                 std::ios::beg);
+  debug("Текущий курсор при записи в блок номер " + std::to_string(block_no) +
+        " " + std::to_string(this->fd.tellg()));
+  if (!this->fd.write(buffer, this->superblock->s_block_size)) {
+    log("Ошибка при записи в блок: " + std::to_string(block_no),
+        LogLevel::error);
+    return;
+  }
 }
 
 void FS::debug(std::string message) { FS::log(message, LogLevel::warning); }
