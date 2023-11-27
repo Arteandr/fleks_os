@@ -2,6 +2,9 @@
 #include "../includes/os_status.h"
 
 int MakeFileCommand::execute(std::vector<std::string> args) {
-  this->fs->make_file("test.txt");
+  if (args.size() < 1)
+    return OS_SUCCESS;
+
+  this->fs->make_file(args[0].c_str());
   return OS_SUCCESS;
 };
