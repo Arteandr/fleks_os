@@ -9,7 +9,7 @@ class Executor {
   std::map<std::string, Command *> cmds;
 
 public:
-  Executor();
+  Executor(FS *fs);
   ~Executor();
   int execute(std::string cmd, std::vector<std::string> args);
 };

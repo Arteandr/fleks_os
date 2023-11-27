@@ -1,17 +1,20 @@
 #include "../includes/executor.h"
 #include "../includes/clear.h"
 #include "../includes/exit.h"
+#include "../includes/ls.h"
 #include "../includes/os_status.h"
 #include <iostream>
 #include <ostream>
 #include <string>
 #include <vector>
 
-Executor::Executor() {
+Executor::Executor(FS *fs) {
   struct {
     std::string alias;
     Command *cmd;
-  } all_commands[] = {{"clear", new ClearCommand}, {"exit", new ExitCommand}};
+  } all_commands[] = {{"clear", new ClearCommand(fs)},
+                      {"exit", new ExitCommand(fs)},
+                      {"ls", new ListCommand(fs)}};
   int commands_count = sizeof(all_commands) / sizeof(all_commands[0]);
 
   for (int i = 0; i < commands_count; i++)

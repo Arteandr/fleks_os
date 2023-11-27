@@ -4,5 +4,8 @@
 #include "command.h"
 class ClearCommand : public Command {
   virtual int execute(std::vector<std::string>);
+
+public:
+  ClearCommand(FS *fs) : Command(fs){};
 };
 #endif // !DEBUG

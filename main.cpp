@@ -22,7 +22,6 @@ void clear() { system("clear"); }
 
 void start() {
   clear();
-  Executor *executor = new Executor();
   FS *fs = nullptr;
 
   try {
@@ -33,6 +32,7 @@ void start() {
     return;
   }
 
+  Executor *executor = new Executor(fs);
   bool mainLoop = true;
   while (mainLoop) {
     std::string curr_time = utils::current_time();
@@ -125,6 +125,8 @@ void install() {
   system("stty raw");
   getchar();
   system("stty cooked");
+
+  start();
 }
 
 void logo() {

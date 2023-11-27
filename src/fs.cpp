@@ -241,6 +241,9 @@ void FS::format(size_t fs_size, size_t block_size) {
   fs->make_empty_directory(group_no, 1, 1, root);
   fs->create_inode(group_no, 1, root);
 
+  fs->read_inode(group_no, 1, fs->current_directory);
+  fs->current_directory_i_no = 1;
+
   FS::log("Файловая система успешно установлена");
   FS::debug("Для продолжения нажмите любую кнопку...");
 
@@ -329,6 +332,24 @@ bool FS::set_block_bitmap(size_t group_no, bitmap *bm) {
     return false;
 
   return true;
+}
+
+void FS::read_inode(u32 group_no, u32 inode_no, inode *&i) {
+  bitmap *bm = this->get_inode_bitmap(group_no);
+  if (!bm->get_bit(inode_no)) {
+    FS::log("Чтение пустого inode", LogLevel::error);
+    return;
+  }
+  // TODO: Добавить проверку на номер инода
+  if (inode_no < 1) {
+    i = nullptr;
+    FS::log("Чтение некорректного inode", LogLevel::error);
+    return;
+  }
+
+  inode *inode_table = this->get_inode_table(group_no);
+
+  i = &(inode_table[inode_no]);
 }
 
 std::pair<u32, u32> FS::allocate_block() {
