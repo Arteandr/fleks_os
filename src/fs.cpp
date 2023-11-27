@@ -345,6 +345,7 @@ void FS::format(size_t fs_size, size_t block_size) {
   root->i_blocks = 1;
   root->i_mode = S_IROTH | S_IRUSR | S_IWUSR | S_IXUSR;
   root->i_uid = 0;
+  root->i_ctime = utils::current_time_to_u32();
   root->i_size = fs->superblock->s_block_size;
   fs->make_empty_directory(group_no, 1, 1, root);
   fs->create_inode(1, root);
@@ -521,13 +522,10 @@ std::pair<u32, u32> FS::allocate_block() {
     return {};
   }
 
-  // return {group_no, group.bg_first_data_block + block_no - 1};
   return {group_no, block_no};
 }
 
 dentry *FS::make_directory_block() {
-  // dentry *directories =
-  //     new dentry[this->superblock->s_block_size / sizeof(dentry)];
   dentry *directories = (dentry *)calloc(
       this->superblock->s_block_size / sizeof(dentry), sizeof(dentry));
 
@@ -680,6 +678,7 @@ void FS::make_file(const char *filename) {
   i_node->i_block[0] = block_no;
   i_node->i_size = 0;
   i_node->i_uid = this->current_uid;
+  i_node->i_ctime = utils::current_time_to_u32();
   u32 inode_no = this->create_inode(i_node);
 
   info_status directory = this->directory_info(
@@ -713,57 +712,33 @@ void FS::make_file(const char *filename) {
   FS::debug(filename);
 }
 
-std::vector<size_t> calculateColumnWidths(std::vector<std::string> &matrix,
-                                          size_t rows, size_t cols) {
-  std::vector<size_t> max_width(cols, 0);
-
-  for (size_t row = 0; row < rows; ++row) {
-    for (size_t col = 0; col < cols; ++col) {
-      size_t width = matrix[row * cols + col].length();
-      if (width > max_width[col]) {
-        max_width[col] = width;
-      }
-    }
-  }
-
-  return max_width;
-}
-
-void outputAlignedData(std::vector<std::string> &matrix, size_t rows,
-                       size_t cols, const std::vector<size_t> &max_width) {
-  for (size_t row = 0; row < rows; ++row) {
-    for (size_t col = 0; col < cols; ++col) {
-      std::cout << std::setw(max_width[col] + 3) << std::left
-                << matrix[row * cols + col];
-    }
-    std::cout << std::endl;
-  }
-}
-
 void FS::list() {
   info_status stat =
       this->directory_info(nullptr, this->current_directory_i_no, ALL_ENTRIES);
-  std::cout << "Всего " << stat.found_count << "\n\n";
+  std::cout << "total " << stat.found_count << "\n\n";
 
   if (stat.found_count < 1)
     return;
 
-  std::vector<std::string> data = {"name", "uid", "size"};
+  std::vector<std::string> data = {"uid", "size", "ctime", "name"};
   size_t rows = stat.found_count + 1;
-  size_t columns = 3;
+  size_t columns = data.size();
 
   for (size_t i = 0; i < stat.found_count; ++i) {
     inode *i_node;
     this->read_inode(stat.directory[i].inode, i_node);
-    data.push_back(stat.directory[i].name);
     data.push_back(std::to_string(i_node->i_uid));
     data.push_back(std::to_string(i_node->i_size));
+    data.push_back(utils::current_time_from_u32(i_node->i_ctime));
+    std::stringstream ss;
+    ss << "\033[32m" << stat.directory[i].name << "\033[0m";
+    data.push_back(ss.str());
   }
 
   std::vector<size_t> column_widths =
-      calculateColumnWidths(data, rows, columns);
+      utils::calculate_column_widths(data, rows, columns);
 
-  outputAlignedData(data, rows, columns, column_widths);
+  utils::output_aligned_data(data, rows, columns, column_widths);
 }
 
 void FS::info() {
