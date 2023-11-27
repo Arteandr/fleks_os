@@ -10,6 +10,7 @@ typedef struct group_desc {
   u32 bg_block_bitmap;
   u32 bg_inode_bitmap;
   u32 bg_inode_table;
+  u32 bg_first_data_block;
   u16 bg_free_blocks_count;
   u16 bg_free_inodes_count;
 } group_desc;

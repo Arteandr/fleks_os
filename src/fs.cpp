@@ -191,6 +191,8 @@ void FS::format(size_t fs_size, size_t block_size) {
                                                 remaining_blocks) /
                                          block_size));
     remaining_blocks -= (inodes_per_group * sizeof(inode)) / block_size;
+    group_desc_table[group_no - 1].bg_first_data_block =
+        cursor(group_no, start_blocks_count, remaining_blocks) / block_size;
 
     FS::log(cursor(group_no, start_blocks_count, remaining_blocks) / block_size,
             group_no, "Начало записи блоков данных");
@@ -352,7 +354,7 @@ std::pair<u32, u32> FS::allocate_block() {
 
   const group_desc &group = this->gdt[group_no];
   FS::debug("Block allocation end");
-  return {group_no, group.bg_inode_table + block_no};
+  return {group_no, group.bg_first_data_block + block_no - 1};
 }
 
 dentry *FS::make_directory_block() {
@@ -401,6 +403,7 @@ void FS::make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
   delete parent_directory;
 }
 
+// TODO: fix inode table size
 void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
   bitmap *bm = this->get_block_bitmap(group_no);
   if (bm->get_bit(i->i_block[block_no])) {
@@ -413,9 +416,15 @@ void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
     return;
   }
 
-  this->fd.seekg(block_no == 0
-                     ? 5 * this->superblock->s_block_size
-                     : i->i_block[block_no] * this->superblock->s_block_size,
+  // const group_desc &group = this->gdt[group_no];
+  //
+  // this->fd.seekg(group.bg_first_data_block * this->superblock->s_block_size,
+  //                std::ios::beg);
+  // this->fd.seekg(block_no == 0
+  //                    ? 5 * this->superblock->s_block_size
+  //                    : i->i_block[block_no] * this->superblock->s_block_size,
+  //                std::ios::beg);
+  this->fd.seekg(i->i_block[block_no] * this->superblock->s_block_size,
                  std::ios::beg);
   debug("Текущий курсор при записи в блок номер " + std::to_string(block_no) +
         " " + std::to_string(this->fd.tellg()));
