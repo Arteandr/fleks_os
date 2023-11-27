@@ -243,6 +243,9 @@ void FS::format(size_t fs_size, size_t block_size) {
 
   FS::log("Файловая система успешно установлена");
   FS::debug("Для продолжения нажмите любую кнопку...");
+
+  delete fs;
+  delete root;
 }
 
 u32 FS::create_inode(u32 group_no, u32 inode_no, inode *i) {
@@ -253,7 +256,6 @@ u32 FS::create_inode(u32 group_no, u32 inode_no, inode *i) {
   inode *inode_table = this->get_inode_table(group_no);
   inode_bitmap->set_bit(inode_no, true);
   inode_table[inode_no] = *i;
-  std::cout << "SIZE INODE: " << sizeof(inode);
 
   this->set_inode_bitmap(group_no, inode_bitmap);
   this->set_inode_table(group_no, inode_table);
@@ -330,7 +332,6 @@ bool FS::set_block_bitmap(size_t group_no, bitmap *bm) {
 }
 
 std::pair<u32, u32> FS::allocate_block() {
-  FS::debug("Block allocation started");
   const size_t groups_count =
       this->superblock->s_blocks_count / this->superblock->s_block_size;
   size_t block_no;
@@ -344,6 +345,7 @@ std::pair<u32, u32> FS::allocate_block() {
       break;
     }
   }
+  FS::debug("Выделение свободного блока данных");
   FS::debug("Группа: " + std::to_string(group_no));
   FS::debug("Выделенный блок: " + std::to_string(block_no));
   bm->set_bit(block_no, true);
@@ -353,7 +355,6 @@ std::pair<u32, u32> FS::allocate_block() {
   }
 
   const group_desc &group = this->gdt[group_no];
-  FS::debug("Block allocation end");
   return {group_no, group.bg_first_data_block + block_no - 1};
 }
 
