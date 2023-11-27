@@ -435,7 +435,11 @@ void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
   }
 }
 
-void FS::debug(std::string message) { FS::log(message, LogLevel::warning); }
+void FS::debug(std::string message) {
+#if DEBUG == 1
+  FS::log(message, LogLevel::warning);
+#endif
+}
 
 void FS::log(u32 block_no, u32 group_no, std::string message,
              LogLevel log_level) {

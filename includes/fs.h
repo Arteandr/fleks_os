@@ -9,6 +9,8 @@
 #include <fstream>
 #include <string>
 
+#define DEBUG 1
+
 #define FS_FILENAME "filesystem"
 
 enum class LogLevel { info, warning, error };
