@@ -2,7 +2,6 @@
 #include "../includes/os_status.h"
 
 int ListCommand::execute(std::vector<std::string> args) {
-  this->fs->info();
-
+  this->fs->list();
   return OS_SUCCESS;
 }

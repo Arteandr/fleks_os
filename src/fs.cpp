@@ -18,7 +18,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 
-FS::FS(std::string filename) {
+FS::FS(std::string filename, bool with_root) {
   this->fd.open(filename.c_str(),
                 std::ios::in | std::ios::out | std::ios::binary);
   if (!this->fd.is_open()) {
@@ -53,6 +53,113 @@ FS::FS(std::string filename) {
   this->log("Файловая система успешно запущена");
   std::cout << std::endl;
   this->info();
+
+  if (with_root) {
+    FS::debug("Файловая система загружена с чтением root");
+    this->read_inode(1, this->current_directory);
+    this->current_directory_i_no = 1;
+  }
+}
+
+char FS::extend_inode(inode *i_node) {
+  auto [group_no, block_no] = this->allocate_block();
+
+  i_node->i_blocks++;
+  if (i_node->i_blocks > BLOCKS_COUNT) {
+    log("Закончились блоки данных", LogLevel::error);
+
+    i_node->i_blocks--;
+    this->free_block(group_no, block_no);
+    return 1;
+  }
+
+  i_node->i_size += this->superblock->s_block_size;
+  i_node->i_block[i_node->i_blocks - 1] = block_no;
+
+  return 0;
+}
+
+info_status FS::directory_info(const char *name, u32 inode_no, u16 type) {
+  FS::debug("Получение информации о директории");
+  info_status stat;
+
+  inode *i;
+  this->read_inode(inode_no, i);
+
+  bool exist = false;
+  bool found_empty = false;
+
+  const u32 group_no =
+      std::ceil(inode_no / this->superblock->s_inodes_per_group);
+  u32 block_no = 0;
+  char *block = nullptr;
+  u32 size = 0;
+  dentry *directory = nullptr;
+  dentry *view_directories = nullptr;
+  u32 view_entries = 0;
+  u32 extend_count = 0;
+
+  if ((type & ALL_ENTRIES) == ALL_ENTRIES)
+    view_directories = new dentry[50];
+
+  while (block_no < i->i_blocks && !exist && !found_empty) {
+    delete[] block;
+    this->read_block(group_no, i, block_no, block);
+    directory = reinterpret_cast<dentry *>(block);
+    size = this->superblock->s_block_size * block_no;
+    while (size < i->i_size && !found_empty && !exist &&
+           directory->rec_len == sizeof(dentry)) {
+      if ((type & SAME_ENTRY) == SAME_ENTRY &&
+          strcmp(name, directory->name) == 0 && strlen(directory->name))
+        exist = true;
+      else if ((type & EMPTY_ENTRY) == EMPTY_ENTRY &&
+               directory->file_type == FILE_TYPE_UNKNOWN)
+        found_empty = true;
+      else {
+        if ((type & ALL_ENTRIES) == ALL_ENTRIES && directory->name_len != 0) {
+          if (view_entries >= 50 * (extend_count + 1)) {
+            dentry *temp = new dentry[view_entries * 2];
+            memset(temp, 0, sizeof(dentry) * view_entries * 2);
+            memcpy(temp, view_directories, sizeof(dentry) * view_entries);
+
+            delete[] view_directories;
+            view_directories = temp;
+            extend_count++;
+          }
+
+          view_directories[view_entries] = *directory;
+          view_entries++;
+        }
+
+        directory++;
+        size += directory->rec_len;
+      }
+    }
+    block_no++;
+  }
+
+  if (exist || found_empty)
+    block_no--;
+
+  if ((type & RETURN_BLOCK) == RETURN_BLOCK) {
+    stat.block = block;
+    stat.directory = directory;
+    stat.block_no = block_no;
+  } else {
+    delete[] block;
+    block = nullptr;
+    directory = nullptr;
+  }
+
+  if ((type & ALL_ENTRIES) == ALL_ENTRIES) {
+    stat.directory = view_directories;
+    stat.found_count = view_entries;
+  }
+
+  stat.empty = found_empty;
+  stat.exist = exist;
+
+  return stat;
 }
 
 // fs_size - Размер ФС в байтах
@@ -239,9 +346,9 @@ void FS::format(size_t fs_size, size_t block_size) {
   root->i_uid = 0;
   root->i_size = fs->superblock->s_block_size;
   fs->make_empty_directory(group_no, 1, 1, root);
-  fs->create_inode(group_no, 1, root);
+  fs->create_inode(1, root);
 
-  fs->read_inode(group_no, 1, fs->current_directory);
+  fs->read_inode(1, fs->current_directory);
   fs->current_directory_i_no = 1;
 
   FS::log("Файловая система успешно установлена");
@@ -251,7 +358,37 @@ void FS::format(size_t fs_size, size_t block_size) {
   delete root;
 }
 
-u32 FS::create_inode(u32 group_no, u32 inode_no, inode *i) {
+void FS::free_inode(u32 inode_no) {
+  const u32 group_no =
+      std::ceil(inode_no / this->superblock->s_inodes_per_group);
+
+  bitmap *bm = this->get_inode_bitmap(group_no);
+  bm->set_bit(inode_no, false);
+  this->set_inode_bitmap(group_no, bm);
+}
+
+u32 FS::create_inode(inode *i_node) {
+  const size_t groups_count =
+      this->superblock->s_blocks_count / this->superblock->s_block_size;
+  u32 inode_no;
+  u32 group_no;
+  bitmap *bm;
+  for (size_t i = 0; i < groups_count; ++i) {
+    bm = this->get_inode_bitmap(i);
+    inode_no = bm->search_free();
+    if (inode_no > 0) {
+      group_no = i;
+      break;
+    }
+  }
+
+  return this->create_inode(inode_no, i_node);
+}
+
+u32 FS::create_inode(u32 inode_no, inode *i) {
+  const u32 group_no =
+      std::ceil(inode_no / this->superblock->s_inodes_per_group);
+  FS::debug("Создание иноды в группе: " + std::to_string(group_no));
   bitmap *inode_bitmap = this->get_inode_bitmap(group_no);
   if (inode_bitmap->get_bit(inode_no))
     return 0;
@@ -334,10 +471,15 @@ bool FS::set_block_bitmap(size_t group_no, bitmap *bm) {
   return true;
 }
 
-void FS::read_inode(u32 group_no, u32 inode_no, inode *&i) {
+void FS::read_inode(u32 inode_no, inode *&i) {
+  const u32 group_no =
+      std::ceil(inode_no / this->superblock->s_inodes_per_group);
+  FS::debug("Чтение inode с номером " + std::to_string(inode_no) +
+            " в группе: " + std::to_string(group_no));
   bitmap *bm = this->get_inode_bitmap(group_no);
   if (!bm->get_bit(inode_no)) {
-    FS::log("Чтение пустого inode", LogLevel::error);
+    FS::log("Чтение пустого inode с номером " + std::to_string(inode_no),
+            LogLevel::error);
     return;
   }
   // TODO: Добавить проверку на номер инода
@@ -366,6 +508,9 @@ std::pair<u32, u32> FS::allocate_block() {
       break;
     }
   }
+  const group_desc &group = this->gdt[group_no];
+  block_no = group.bg_first_data_block + block_no - 1;
+
   FS::debug("Выделение свободного блока данных");
   FS::debug("Группа: " + std::to_string(group_no));
   FS::debug("Выделенный блок: " + std::to_string(block_no));
@@ -375,8 +520,8 @@ std::pair<u32, u32> FS::allocate_block() {
     return {};
   }
 
-  const group_desc &group = this->gdt[group_no];
-  return {group_no, group.bg_first_data_block + block_no - 1};
+  // return {group_no, group.bg_first_data_block + block_no - 1};
+  return {group_no, block_no};
 }
 
 dentry *FS::make_directory_block() {
@@ -425,27 +570,40 @@ void FS::make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
   delete parent_directory;
 }
 
-// TODO: fix inode table size
-void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
+void FS::read_block(u32 group_no, inode *i, u32 block_no, char *&buffer) {
   bitmap *bm = this->get_block_bitmap(group_no);
-  if (bm->get_bit(i->i_block[block_no])) {
-    log("Попытка записать в занятый блок", LogLevel::error);
-    return;
-  }
-  if (!this->fd.is_open()) {
-    log("Ошибка при записи в блок: " + std::to_string(block_no),
+  if (!bm->get_bit(i->i_block[block_no])) {
+    log(group_no,
+        "Попытка чтения пустого блока с номером: " + std::to_string(block_no),
         LogLevel::error);
     return;
   }
 
-  // const group_desc &group = this->gdt[group_no];
-  //
-  // this->fd.seekg(group.bg_first_data_block * this->superblock->s_block_size,
-  //                std::ios::beg);
-  // this->fd.seekg(block_no == 0
-  //                    ? 5 * this->superblock->s_block_size
-  //                    : i->i_block[block_no] * this->superblock->s_block_size,
-  //                std::ios::beg);
+  buffer = new char[this->superblock->s_block_size];
+  this->fd.seekg(i->i_block[block_no] * this->superblock->s_block_size,
+                 std::ios::beg);
+  debug("Текущий курсор при чтении блока номером " +
+        std::to_string(i->i_block[block_no]) + " " +
+        std::to_string(this->fd.tellg()));
+  if (!this->fd.read(buffer, this->superblock->s_block_size)) {
+    log("Ошибка при чтении блока: " + std::to_string(block_no),
+        LogLevel::error);
+    delete[] buffer;
+    return;
+  }
+}
+
+// TODO: fix inode table size
+void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
+  bitmap *bm = this->get_block_bitmap(group_no);
+  if (!bm->get_bit(i->i_block[block_no])) {
+    log(group_no,
+        "Попытка записать в занятый блок с номером " +
+            std::to_string(i->i_block[block_no]),
+        LogLevel::error);
+    return;
+  }
+
   this->fd.seekg(i->i_block[block_no] * this->superblock->s_block_size,
                  std::ios::beg);
   debug("Текущий курсор при записи в блок номер " + std::to_string(block_no) +
@@ -455,6 +613,12 @@ void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
         LogLevel::error);
     return;
   }
+}
+
+void FS::free_block(u32 group_no, u32 block_no) {
+  bitmap *bm = this->get_block_bitmap(group_no);
+  bm->set_bit(block_no, false);
+  this->set_block_bitmap(group_no, bm);
 }
 
 void FS::debug(std::string message) {
@@ -498,6 +662,70 @@ void FS::log(std::string message, LogLevel log_level, bool new_line) {
             << "\033[0m";
   if (new_line)
     std::cout << std::endl;
+}
+
+void FS::make_file(const char *filename) {
+  if (std::strlen(filename) > FILE_NAME_LENGTH)
+    return;
+
+  info_status stat =
+      this->directory_info(filename, this->current_directory_i_no, SAME_ENTRY);
+  if (stat.exist)
+    return;
+
+  auto [group_no, block_no] = this->allocate_block();
+  inode *i_node = new inode;
+  i_node->i_blocks = 1;
+  i_node->i_block[0] = block_no;
+  i_node->i_size = this->superblock->s_block_size;
+  i_node->i_uid = this->current_uid;
+  u32 inode_no = this->create_inode(i_node);
+
+  info_status directory = this->directory_info(
+      nullptr, this->current_directory_i_no, EMPTY_ENTRY | RETURN_BLOCK);
+
+  if (!directory.empty) {
+    delete[] directory.block;
+
+    if (this->extend_inode(this->current_directory) == 1) {
+      this->free_block(group_no, i_node->i_block[0]);
+      this->free_inode(inode_no);
+      delete i_node;
+      return;
+    }
+
+    directory.block = (char *)this->make_directory_block();
+    directory.directory = (dentry *)directory.block;
+  }
+
+  directory.directory->file_type = FILE_TYPE_FILE;
+  directory.directory->inode = inode_no;
+  directory.directory->name_len = std::strlen(filename);
+  memcpy(directory.directory->name, filename, directory.directory->name_len);
+  this->write_block(group_no, this->current_directory, directory.block_no,
+                    directory.block);
+
+  delete i_node;
+  delete[] directory.block;
+
+  FS::debug("Успешно создан файл");
+  FS::debug(filename);
+}
+
+void FS::list() {
+  info_status stat =
+      this->directory_info(nullptr, this->current_directory_i_no, ALL_ENTRIES);
+  std::cout << "Всего " << stat.found_count << std::endl;
+
+  if (stat.found_count < 1)
+    return;
+
+  for (size_t i = 0; i < stat.found_count; ++i) {
+    inode *i_node;
+    this->read_inode(stat.directory[i].inode, i_node);
+
+    std::cout << (char *)stat.directory[i].name << std::endl;
+  }
 }
 
 void FS::info() {

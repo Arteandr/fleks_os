@@ -2,6 +2,7 @@
 #include "../includes/clear.h"
 #include "../includes/exit.h"
 #include "../includes/ls.h"
+#include "../includes/mkfile.h"
 #include "../includes/os_status.h"
 #include <iostream>
 #include <ostream>
@@ -14,7 +15,8 @@ Executor::Executor(FS *fs) {
     Command *cmd;
   } all_commands[] = {{"clear", new ClearCommand(fs)},
                       {"exit", new ExitCommand(fs)},
-                      {"ls", new ListCommand(fs)}};
+                      {"ls", new ListCommand(fs)},
+                      {"file", new MakeFileCommand(fs)}};
   int commands_count = sizeof(all_commands) / sizeof(all_commands[0]);
 
   for (int i = 0; i < commands_count; i++)

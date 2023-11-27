@@ -1,9 +1,7 @@
-#include "includes/bitmap.h"
 #include "includes/console.h"
 #include "includes/executor.h"
 #include "includes/fs.h"
 #include "includes/os_status.h"
-#include "includes/superblock.h"
 #include "src/utils.hpp"
 #include <bits/types/time_t.h>
 #include <cstdio>
@@ -25,7 +23,7 @@ void start() {
   FS *fs = nullptr;
 
   try {
-    fs = new FS(FS_FILENAME);
+    fs = new FS(FS_FILENAME, true);
   } catch (const runtime_error &e) {
     FS::log(e.what(), LogLevel::error);
     delete fs;
