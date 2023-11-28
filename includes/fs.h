@@ -9,9 +9,10 @@
 #include <fstream>
 #include <string>
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define FS_FILENAME "filesystem"
+#define FS_ROOT_INODE_NO 0
 
 enum class LogLevel { info, warning, error };
 
@@ -64,6 +65,7 @@ private:
                             inode *i);
   dentry *make_directory_block();
   info_status directory_info(const char *name, u32 inode_no, u16 type);
+  void read_root();
 
 public:
   FS(std::string filename, bool with_root = false);

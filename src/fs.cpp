@@ -57,8 +57,7 @@ FS::FS(std::string filename, bool with_root) {
 
   if (with_root) {
     FS::debug("Файловая система загружена с чтением root");
-    this->read_inode(1, this->current_directory);
-    this->current_directory_i_no = 1;
+    this->read_root();
   }
 }
 
@@ -340,6 +339,7 @@ void FS::format(size_t fs_size, size_t block_size) {
 
   FS *fs = new FS(FS_FILENAME);
   auto [group_no, block_no] = fs->allocate_block();
+  std::cout << "Allocated block_no = " << block_no << std::endl;
   inode *root = new inode;
   root->i_block[0] = block_no;
   root->i_blocks = 1;
@@ -347,17 +347,23 @@ void FS::format(size_t fs_size, size_t block_size) {
   root->i_uid = 0;
   root->i_ctime = utils::current_time_to_u32();
   root->i_size = fs->superblock->s_block_size;
-  fs->make_empty_directory(group_no, 1, 1, root);
-  fs->create_inode(1, root);
+  fs->make_empty_directory(group_no, FS_ROOT_INODE_NO, FS_ROOT_INODE_NO, root);
+  fs->create_inode(FS_ROOT_INODE_NO, root);
 
-  fs->read_inode(1, fs->current_directory);
-  fs->current_directory_i_no = 1;
+  fs->read_root();
+  // fs->read_inode(1, fs->current_directory);
+  // fs->current_directory_i_no = 1;
 
   FS::log("Файловая система успешно установлена");
   FS::debug("Для продолжения нажмите любую кнопку...");
 
   delete fs;
   delete root;
+}
+
+void FS::read_root() {
+  this->read_inode(FS_ROOT_INODE_NO, this->current_directory);
+  this->current_directory_i_no = FS_ROOT_INODE_NO;
 }
 
 void FS::free_inode(u32 inode_no) {
@@ -485,7 +491,7 @@ void FS::read_inode(u32 inode_no, inode *&i) {
     return;
   }
   // TODO: Добавить проверку на номер инода
-  if (inode_no < 1) {
+  if (inode_no < 0) {
     i = nullptr;
     FS::log("Чтение некорректного inode", LogLevel::error);
     return;
@@ -505,13 +511,13 @@ std::pair<u32, u32> FS::allocate_block() {
   for (size_t i = 0; i < groups_count; ++i) {
     bm = this->get_block_bitmap(i);
     block_no = bm->search_free();
-    if (block_no > 0) {
+    debug("Выделенный блок: " + std::to_string(block_no));
+    if (block_no >= 0) {
       group_no = i;
       break;
     }
   }
   const group_desc &group = this->gdt[group_no];
-  block_no = group.bg_first_data_block + block_no - 1;
 
   FS::debug("Выделение свободного блока данных");
   FS::debug("Группа: " + std::to_string(group_no));
@@ -521,6 +527,8 @@ std::pair<u32, u32> FS::allocate_block() {
     FS::log(group_no, "Битовая карта блоков поврежденна", LogLevel::error);
     return {};
   }
+
+  block_no = group.bg_first_data_block + block_no;
 
   return {group_no, block_no};
 }
@@ -571,9 +579,14 @@ void FS::make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
 
 void FS::read_block(u32 group_no, inode *i, u32 block_no, char *&buffer) {
   bitmap *bm = this->get_block_bitmap(group_no);
-  if (!bm->get_bit(i->i_block[block_no])) {
+  const group_desc &group = this->gdt[group_no];
+
+  if (!bm->get_bit(i->i_block[block_no] - group.bg_first_data_block)) {
     log(group_no,
         "Попытка чтения пустого блока с номером: " + std::to_string(block_no),
+        LogLevel::error);
+    log(group_no,
+        std::to_string(i->i_block[block_no] - group.bg_first_data_block),
         LogLevel::error);
     return;
   }
@@ -595,7 +608,9 @@ void FS::read_block(u32 group_no, inode *i, u32 block_no, char *&buffer) {
 // TODO: fix inode table size
 void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
   bitmap *bm = this->get_block_bitmap(group_no);
-  if (!bm->get_bit(i->i_block[block_no])) {
+  const group_desc &group = this->gdt[group_no];
+
+  if (!bm->get_bit(i->i_block[block_no] - group.bg_first_data_block)) {
     log(group_no,
         "Попытка записать в занятый блок с номером " +
             std::to_string(i->i_block[block_no]),

@@ -1,17 +1,18 @@
 #include "../includes/bitmap.h"
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 
 bitmap::bitmap(size_t count) {
   this->bit_map = (u8 *)calloc(count / 8, sizeof(u8));
-  this->set_bit(0, true);
+  // this->set_bit(0, true);
   this->size = count / 8;
 }
 
 bitmap::bitmap(char *buffer, size_t count) {
   this->bit_map = (u8 *)calloc(count / 8, sizeof(u8));
   memcpy(this->bit_map, buffer, count / 8);
-  this->set_bit(0, true);
+  // this->set_bit(0, true);
   this->size = count / 8;
 }
 
@@ -28,7 +29,7 @@ void bitmap::set_bit(size_t position, u8 flag) {
   }
 }
 
-u8 bitmap::get_bit(size_t position) {
+bool bitmap::get_bit(size_t position) {
   size_t element = position / 8;
   size_t offset = position % 8;
 
@@ -44,13 +45,13 @@ size_t bitmap::search_free() {
   bool found = false;
 
   for (size_t i = 0; i < this->get_size(), !found; ++i) {
-    if (this->bit_map[i] == (~this->bit_map[i] | this->bit_map[i])) {
+    if (this->bit_map[i] == (char)(~this->bit_map[i] | this->bit_map[i])) {
       counter += 8;
       continue;
     }
 
     for (size_t j = 0; j < 8, !found; ++j) {
-      u8 bitmask = (1 << j);
+      u16 bitmask = (1 << j);
       if ((this->bit_map[i] & bitmask) == bitmask)
         counter++;
       else
