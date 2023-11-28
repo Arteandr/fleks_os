@@ -141,8 +141,6 @@ info_status FS::directory_info(const char *name, u32 inode_no, u16 type) {
     block_no++;
   }
 
-  std::cout << "BLOCK_NO_AFTER: " << block_no << std::endl;
-
   if (exist || found_empty)
     block_no--;
 
@@ -508,8 +506,6 @@ void FS::read_inode(u32 inode_no, inode *&i) {
   }
 
   inode *inode_table = this->get_inode_table(group_no);
-  std::cout << "inside read_inode: " << inode_table[inode_no].i_blocks
-            << std::endl;
 
   i = &(inode_table[inode_no]);
 }
@@ -569,12 +565,12 @@ dentry *FS::make_directory_block() {
 
 void FS::make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
                               inode *i) {
-  dentry *current_directory = new dentry();
-  current_directory->inode = inode_no;
-  current_directory->file_type = FILE_TYPE_DIR;
-  current_directory->name_len = 1;
-  current_directory->rec_len = sizeof(dentry);
-  memcpy(current_directory->name, ".", 1);
+  // dentry *current_directory = new dentry();
+  // current_directory->inode = inode_no;
+  // current_directory->file_type = FILE_TYPE_DIR;
+  // current_directory->name_len = 1;
+  // current_directory->rec_len = sizeof(dentry);
+  // memcpy(current_directory->name, ".", 1);
 
   // dentry *parent_directory = new dentry();
   // parent_directory->inode = parent_inode_no;
@@ -585,11 +581,11 @@ void FS::make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
 
   dentry *directories = make_directory_block();
 
-  directories[0] = *current_directory;
+  // directories[0] = *current_directory;
   this->write_block(group_no, i, 0, reinterpret_cast<char *>(directories));
 
   delete[] directories;
-  delete current_directory;
+  // delete current_directory;
 }
 
 void FS::read_block(u32 group_no, inode *i, u32 block_no, char *&buffer) {
@@ -635,9 +631,6 @@ void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
 
   this->fd.seekg(i->i_block[block_no] * this->superblock->s_block_size,
                  std::ios::beg);
-  debug("Текущий курсор при записи в блок номер " +
-        std::to_string(i->i_block[block_no]) + " " +
-        std::to_string(this->fd.tellg()));
   if (!this->fd.write(buffer, this->superblock->s_block_size)) {
     log("Ошибка при записи в блок: " + std::to_string(block_no),
         LogLevel::error);

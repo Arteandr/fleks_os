@@ -66,8 +66,6 @@ void bitmap::print() {
 }
 
 size_t bitmap::search_free() {
-  std::cout << "[" << get_size() << "]"
-            << "Попытка поиска пустого элемента..." << std::endl;
   size_t counter = 0;
   bool found = false;
 
