@@ -9,7 +9,7 @@
 #include <fstream>
 #include <string>
 
-#define DEBUG 1
+#define DEBUG 0
 
 #define FS_FILENAME "filesystem"
 #define FS_ROOT_INODE_NO 0

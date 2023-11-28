@@ -51,8 +51,6 @@ FS::FS(std::string filename, bool with_root) {
   }
   this->gdt = gdt;
 
-  this->log("Файловая система успешно запущена");
-  std::cout << std::endl;
   this->info();
 
   if (with_root) {
@@ -341,7 +339,6 @@ void FS::format(size_t fs_size, size_t block_size) {
 
   FS *fs = new FS(FS_FILENAME);
   auto [group_no, block_no] = fs->allocate_block();
-  std::cout << "Allocated block_no = " << block_no << std::endl;
   inode *root = new inode;
   root->i_block[0] = block_no;
   root->i_blocks = 1;
