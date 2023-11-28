@@ -1,3 +1,4 @@
+#include "includes/bitmap.h"
 #include "includes/console.h"
 #include "includes/executor.h"
 #include "includes/fs.h"

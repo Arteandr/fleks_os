@@ -18,6 +18,7 @@ public:
   u8 *get_bitmap();
   size_t get_size();
   size_t search_free();
+  void print();
 };
 
 #endif // !BITMAP_H

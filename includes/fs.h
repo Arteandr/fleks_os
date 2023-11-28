@@ -49,7 +49,7 @@ private:
   u32 create_inode(u32 inode_no, inode *inode);
   u32 create_inode(inode *inode);
   void read_inode(u32 inode_no, inode *&inode);
-  char extend_inode(inode *i_node);
+  char extend_inode(u32 inode_no, inode *i_node);
   void free_inode(u32 inode_no);
   bitmap *get_block_bitmap(size_t block_group_no);
   bitmap *get_inode_bitmap(size_t group_no);

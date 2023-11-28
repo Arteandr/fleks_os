@@ -40,24 +40,74 @@ u8 *bitmap::get_bitmap() { return this->bit_map; }
 
 size_t bitmap::get_size() { return this->size; }
 
+void bitmap::print() {
+  std::cout << "Битовая карта: " << std::endl;
+  bool before_first_empty = true;
+  for (size_t i = 0; i < this->size * 8; ++i) {
+    // std::cout << (this->get_bit(i) ? "1" : "0") << " ";
+    bool result = this->get_bit(i);
+    if (result) {
+      std::cout << "1"
+                << " ";
+    } else {
+      if (before_first_empty) {
+        std::cout << "\x1B[31m0\033[0m"
+                  << " ";
+        before_first_empty = false;
+      } else
+        std::cout << "0"
+                  << " ";
+    }
+
+    if ((i + 1) % 50 == 0)
+      std::cout << std::endl;
+  }
+  std::cout << std::endl;
+}
+
 size_t bitmap::search_free() {
+  std::cout << "[" << get_size() << "]"
+            << "Попытка поиска пустого элемента..." << std::endl;
   size_t counter = 0;
   bool found = false;
 
-  for (size_t i = 0; i < this->get_size(), !found; ++i) {
-    if (this->bit_map[i] == (char)(~this->bit_map[i] | this->bit_map[i])) {
+  for (size_t i = 0; i < get_size() && !found; ++i) {
+    if (bit_map[i] == static_cast<u8>(255)) {
       counter += 8;
       continue;
     }
 
-    for (size_t j = 0; j < 8, !found; ++j) {
-      u16 bitmask = (1 << j);
-      if ((this->bit_map[i] & bitmask) == bitmask)
-        counter++;
-      else
+    for (size_t j = 0; j < 8 && !found; ++j) {
+      char bitmask = (1 << j);
+      if ((bit_map[i] & bitmask) == 0) {
         found = true;
+      } else {
+        ++counter;
+      }
     }
   }
 
   return found ? counter : -1;
 }
+
+// size_t bitmap::search_free() {
+//   size_t counter = 0;
+//   bool found = false;
+//
+//   for (size_t i = 0; i < this->get_size(), !found; ++i) {
+//     if (this->bit_map[i] == (u8)(~this->bit_map[i] | this->bit_map[i])) {
+//       counter += 8;
+//       continue;
+//     }
+//
+//     for (size_t j = 0; j < 8, !found; ++j) {
+//       u16 bitmask = (1 << j);
+//       if ((this->bit_map[i] & bitmask) == bitmask)
+//         counter++;
+//       else
+//         found = true;
+//     }
+//   }
+//
+//   return found ? counter : -1;
+// }
