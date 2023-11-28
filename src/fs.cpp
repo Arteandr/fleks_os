@@ -738,6 +738,45 @@ void FS::make_file(const char *filename) {
   FS::debug(filename);
 }
 
+void FS::rename(const char *old_filename, const char *new_filename) {
+  if (strlen(old_filename) == 0)
+    return;
+
+  if (strlen(old_filename) > FILE_NAME_LENGTH ||
+      strlen(new_filename) > FILE_NAME_LENGTH)
+    return;
+
+  info_status entry = this->directory_info(
+      old_filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
+
+  if (!entry.exist) {
+    delete[] entry.block;
+    return;
+  }
+
+  inode *i_node;
+  this->read_inode(entry.directory->inode, i_node);
+  const u32 group_no =
+      std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
+  info_status entry_new = this->directory_info(
+      new_filename, this->current_directory_i_no, SAME_ENTRY);
+
+  if (entry_new.exist) {
+    delete[] entry_new.block;
+    return;
+  }
+
+  entry.directory->name_len = strlen(new_filename);
+  memset(entry.directory->name, 0, strlen(old_filename));
+  memcpy(entry.directory->name, new_filename, entry.directory->name_len);
+
+  this->write_block(group_no, this->current_directory, entry.block_no,
+                    entry.block);
+
+  delete[] entry.block;
+  return;
+}
+
 void FS::list() {
   info_status stat =
       this->directory_info(nullptr, this->current_directory_i_no, ALL_ENTRIES);

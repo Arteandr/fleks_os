@@ -4,6 +4,7 @@
 #include "../includes/ls.h"
 #include "../includes/mkfile.h"
 #include "../includes/os_status.h"
+#include "../includes/rename.h"
 #include <iostream>
 #include <ostream>
 #include <string>
@@ -16,7 +17,8 @@ Executor::Executor(FS *fs) {
   } all_commands[] = {{"clear", new ClearCommand(fs)},
                       {"exit", new ExitCommand(fs)},
                       {"ls", new ListCommand(fs)},
-                      {"file", new MakeFileCommand(fs)}};
+                      {"file", new MakeFileCommand(fs)},
+                      {"rename", new RenameCommand(fs)}};
   int commands_count = sizeof(all_commands) / sizeof(all_commands[0]);
 
   for (int i = 0; i < commands_count; i++)

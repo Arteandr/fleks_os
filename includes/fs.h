@@ -79,6 +79,7 @@ public:
   void info();
   void list();
   void make_file(const char *filename);
+  void rename(const char *old_filename, const char *new_filename);
 };
 
 #endif
