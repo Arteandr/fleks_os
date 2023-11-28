@@ -113,8 +113,7 @@ info_status FS::directory_info(const char *name, u32 inode_no, u16 type) {
     directory = reinterpret_cast<dentry *>(block);
     while (!found_empty && !exist && directory->rec_len == sizeof(dentry)) {
       if ((type & SAME_ENTRY) == SAME_ENTRY &&
-          strcmp(name, directory->name) == 0 &&
-          strlen(directory->name) == directory->name_len)
+          strcmp(name, directory->name) == 0 && strlen(directory->name))
         exist = true;
       else if ((type & EMPTY_ENTRY) == EMPTY_ENTRY &&
                directory->file_type == FILE_TYPE_UNKNOWN) {
@@ -762,7 +761,6 @@ void FS::rename(const char *old_filename, const char *new_filename) {
       new_filename, this->current_directory_i_no, SAME_ENTRY);
 
   if (entry_new.exist) {
-    delete[] entry_new.block;
     return;
   }
 
