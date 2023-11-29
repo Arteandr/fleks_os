@@ -24,7 +24,7 @@ Executor::Executor(FS *fs) {
       {"ls", new ListCommand(fs)},       {"file", new MakeFileCommand(fs)},
       {"rename", new RenameCommand(fs)}, {"bm", new BmCommand(fs)},
       {"rm", new RemoveCommand(fs)},     {"cp", new CopyCommand(fs)},
-      {"write", new WriteCommand(fs)},   {"cat", new CatCommand(fs)}};
+      {"vedit", new WriteCommand(fs)},   {"cat", new CatCommand(fs)}};
   int commands_count = sizeof(all_commands) / sizeof(all_commands[0]);
 
   for (int i = 0; i < commands_count; i++)

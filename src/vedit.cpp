@@ -1,4 +1,5 @@
 #include "../includes/vedit.hpp"
+#include <cstring>
 #include <curses.h>
 #include <ncurses.h>
 #include <sstream>
@@ -41,7 +42,7 @@ void VisualEditor::open(const char *buffer) {
     this->append(line);
 }
 
-void VisualEditor::run() {
+bool VisualEditor::run() {
   while (mode != 'q') {
     this->update();
     this->status_line();
@@ -52,6 +53,8 @@ void VisualEditor::run() {
 
   refresh();
   endwin();
+
+  return this->need_save;
 }
 
 void VisualEditor::input(int c) {
@@ -82,13 +85,7 @@ void VisualEditor::input(int c) {
       mode = 'i';
       break;
     case 'w':
-      mode = 'w';
-      // save();
-      // refresh();
-      // endwin();
-      std::printf("Saved!\n");
-      exit(0);
-      // TODO save withot exit
+      this->save();
       break;
     }
     break;
@@ -141,6 +138,22 @@ void VisualEditor::input(int c) {
   }
 }
 
+void VisualEditor::save() {
+  mode = 'q';
+  this->need_save = true;
+}
+
+char *VisualEditor::get_lines() {
+  std::stringstream ss;
+  for (auto line : this->lines)
+    ss << line << '\n';
+  ss << '\0';
+  char *cstr = new char[ss.str().length() + 1];
+  std::strcpy(cstr, ss.str().c_str());
+
+  return cstr;
+}
+
 void VisualEditor::up() {
   if (y > 0) {
     --y;
@@ -178,7 +191,7 @@ void VisualEditor::down() {
 
 void VisualEditor::status_line() {
   if (mode == 'n')
-    init_pair(1, COLOR_MAGENTA, COLOR_BLACK);
+    init_pair(1, COLOR_CYAN, COLOR_BLACK);
   else
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
 

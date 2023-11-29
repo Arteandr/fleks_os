@@ -11,6 +11,8 @@ class VisualEditor {
   std::string filename, status, section;
   std::vector<std::string> lines;
 
+  bool need_save = false;
+
   void append(std::string &line);
   void remove(int);
   void insert(std::string, int);
@@ -21,17 +23,17 @@ class VisualEditor {
   std::string tabs(std::string &line);
   std::vector<std::string> split_by_newline(const std::string &str);
   void input(int c);
+  void save();
 
   void up();
   void left();
   void right();
   void down();
 
-  // void save();
-
 public:
   VisualEditor(const std::string &filename);
   void open(const char *buffer);
-  void run();
+  bool run();
+  char *get_lines();
 };
 #endif // !VEDIT_H
