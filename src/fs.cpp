@@ -14,6 +14,7 @@
 #include <iostream>
 #include <iterator>
 #include <pstl/glue_execution_defs.h>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <sys/mman.h>
@@ -38,8 +39,9 @@ FS::FS(std::string filename, bool with_root) {
     return;
   }
   this->superblock = sb;
-  const u8 groups_count =
-      this->superblock->s_blocks_count / this->superblock->s_blocks_per_group;
+  const size_t groups_count =
+      std::ceil((float)this->superblock->s_blocks_count /
+                this->superblock->s_blocks_per_group);
 
   // Читаем GDT
   group_desc *gdt = new group_desc[groups_count];
@@ -381,8 +383,8 @@ void FS::free_inode(u32 inode_no) {
 }
 
 u32 FS::create_inode(inode *i_node) {
-  const size_t groups_count =
-      this->superblock->s_blocks_count / this->superblock->s_block_size;
+  const size_t groups_count = std::ceil(
+      (float)this->superblock->s_blocks_count / this->superblock->s_block_size);
   u32 inode_no;
   bitmap *bm;
   for (size_t i = 0; i < groups_count; ++i) {
@@ -515,8 +517,8 @@ void FS::read_inode(u32 inode_no, inode *&i) {
 }
 
 std::pair<u32, u32> FS::allocate_block() {
-  const size_t groups_count =
-      this->superblock->s_blocks_count / this->superblock->s_block_size;
+  const size_t groups_count = std::ceil(
+      (float)this->superblock->s_blocks_count / this->superblock->s_block_size);
   size_t block_no;
   size_t group_no;
   bitmap *bm;
@@ -1032,8 +1034,14 @@ void FS::info() {
   FS::log("Размер блока - " + std::to_string(this->superblock->s_block_size));
   FS::log("Количество блоков в группе - " +
           std::to_string(this->superblock->s_blocks_per_group));
-  FS::log("Первый блок данных - " +
-          std::to_string(this->superblock->s_first_data_block));
+  std::stringstream ss;
+  for (size_t i = 0; i < this->superblock->s_blocks_count /
+                             this->superblock->s_blocks_per_group;
+       ++i) {
+    const group_desc &group = this->gdt[i];
+    ss << "[" << (i + 1) << "]:" << group.bg_first_data_block << " ";
+  }
+  FS::log("Первые блоки данных для групп- " + ss.str());
   FS::log("Количество inode в группе - " +
           std::to_string(this->superblock->s_inodes_per_group));
   FS::log("Магическое число - " + std::to_string(this->superblock->s_magic));
