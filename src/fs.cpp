@@ -820,7 +820,6 @@ u32 FS::read_file(const char *filename, void *&buffer) {
   char *local_buffer = nullptr;
   for (size_t i = 0; i < i_node->i_blocks; ++i) {
     this->read_block(group_no, i_node, i, local_buffer);
-    std::cout << "Local buffer: " << (char *)local_buffer << std::endl;
     memcpy(p, local_buffer, this->superblock->s_block_size);
     p += this->superblock->s_block_size;
     delete[] local_buffer;
