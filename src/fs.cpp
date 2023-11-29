@@ -766,7 +766,9 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
 
   char *p = (char *)data;
   char *mem = nullptr;
-  for (size_t i = 0; i < (size - 1) / this->superblock->s_block_size; ++i) {
+  for (size_t i = 0;
+       i < std::ceil((float)size / this->superblock->s_block_size); ++i) {
+    std::cout << "I: " << i << std::endl;
     if (i == i_node->i_blocks &&
         extend_inode(entry.directory->inode, i_node) == 1)
       return (i - 1) * this->superblock->s_block_size;
@@ -778,12 +780,18 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
       this->write_block(group_no, i_node, i, mem);
       delete[] mem;
       mem = nullptr;
-    } else
+    } else {
       this->write_block(group_no, i_node, i, p);
+      p += this->superblock->s_block_size;
+    }
   }
 
-  i_node->i_size = ((size - 1) / this->superblock->s_block_size + 1) *
-                   this->superblock->s_block_size;
+  // i_node->i_size = ((size - 1) / this->superblock->s_block_size + 1) *
+  //                  this->superblock->s_block_size;
+  i_node->i_size = size;
+  inode *inode_table = this->get_inode_table(group_no);
+  inode_table[entry.directory->inode] = *i_node;
+  this->set_inode_table(group_no, inode_table);
 
   delete[] entry.block;
   return 0;
@@ -812,6 +820,7 @@ u32 FS::read_file(const char *filename, void *&buffer) {
   char *local_buffer = nullptr;
   for (size_t i = 0; i < i_node->i_blocks; ++i) {
     this->read_block(group_no, i_node, i, local_buffer);
+    std::cout << "Local buffer: " << (char *)local_buffer << std::endl;
     memcpy(p, local_buffer, this->superblock->s_block_size);
     p += this->superblock->s_block_size;
     delete[] local_buffer;
