@@ -743,6 +743,85 @@ void FS::make_file(const char *filename) {
   FS::debug(filename);
 }
 
+u32 FS::write_file(const char *filename, void *data, u32 size) {
+  if (size / this->superblock->s_block_size > BLOCKS_COUNT)
+    return 0;
+
+  info_status entry = this->directory_info(
+      filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
+  if (!entry.exist) {
+    delete[] entry.block;
+    return 0;
+  }
+
+  if (entry.directory->file_type != FILE_TYPE_FILE) {
+    delete[] entry.block;
+    return 0;
+  }
+
+  const u32 group_no =
+      std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
+  inode *i_node;
+  this->read_inode(entry.directory->inode, i_node);
+
+  char *p = (char *)data;
+  char *mem = nullptr;
+  for (size_t i = 0; i < (size - 1) / this->superblock->s_block_size; ++i) {
+    if (i == i_node->i_blocks &&
+        extend_inode(entry.directory->inode, i_node) == 1)
+      return (i - 1) * this->superblock->s_block_size;
+
+    if (i == size / this->superblock->s_block_size) {
+      mem = new char[this->superblock->s_block_size];
+      memset(mem, 0, this->superblock->s_block_size);
+      memcpy(mem, p, size % this->superblock->s_block_size);
+      this->write_block(group_no, i_node, i, mem);
+      delete[] mem;
+      mem = nullptr;
+    } else
+      this->write_block(group_no, i_node, i, p);
+  }
+
+  i_node->i_size = ((size - 1) / this->superblock->s_block_size + 1) *
+                   this->superblock->s_block_size;
+
+  delete[] entry.block;
+  return 0;
+}
+
+u32 FS::read_file(const char *filename, void *&buffer) {
+  info_status entry = this->directory_info(
+      filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
+  if (!entry.exist) {
+    delete[] entry.block;
+    return 0;
+  }
+
+  if (entry.directory->file_type != FILE_TYPE_FILE) {
+    delete[] entry.block;
+    return 0;
+  }
+
+  const u32 group_no =
+      std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
+  inode *i_node;
+  this->read_inode(entry.directory->inode, i_node);
+
+  char *ret = new char[i_node->i_size];
+  char *p = ret;
+  char *local_buffer = nullptr;
+  for (size_t i = 0; i < i_node->i_blocks; ++i) {
+    this->read_block(group_no, i_node, i, local_buffer);
+    memcpy(p, local_buffer, this->superblock->s_block_size);
+    p += this->superblock->s_block_size;
+    delete[] local_buffer;
+  }
+
+  buffer = ret;
+  delete[] entry.block;
+  return i_node->i_size;
+}
+
 void FS::remove(const char *filename) {
   if (strlen(filename) == 0)
     return;
@@ -769,6 +848,83 @@ void FS::remove(const char *filename) {
   this->free_inode(entry.directory->inode);
 
   delete[] entry.block;
+  return;
+}
+
+void FS::copy(const char *src_filename, const char *dest_filename) {
+  if (strlen(src_filename) == 0 || strlen(dest_filename) == 0)
+    return;
+  if (strlen(src_filename) > FILE_NAME_LENGTH ||
+      strlen(dest_filename) > FILE_NAME_LENGTH)
+    return;
+
+  info_status src_entry = this->directory_info(
+      src_filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
+  if (!src_entry.exist) {
+    delete[] src_entry.block;
+    return;
+  }
+
+  inode *src_inode;
+  this->read_inode(src_entry.directory->inode, src_inode);
+
+  if (src_entry.directory->file_type != FILE_TYPE_FILE) {
+    delete[] src_entry.block;
+    return;
+  }
+
+  info_status dest_entry = this->directory_info(
+      dest_filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
+  if (dest_entry.exist) {
+    delete[] dest_entry.block;
+    return;
+  }
+
+  inode *dest_inode = new inode;
+  memcpy(dest_inode, src_inode, sizeof(inode));
+  dest_inode->i_uid = this->current_uid;
+  u32 dest_inode_no = this->create_inode(dest_inode);
+  const u32 group_no =
+      std::ceil(dest_inode_no / this->superblock->s_inodes_per_group);
+  for (size_t i = 0; i < src_inode->i_blocks; ++i) {
+    char *data;
+    auto [group_no, block_no] = this->allocate_block();
+    this->read_block(group_no, src_inode, i, data);
+    this->write_block(group_no, dest_inode, i, data);
+
+    delete[] data;
+  }
+
+  info_status empty_entry = this->directory_info(
+      nullptr, this->current_directory_i_no, EMPTY_ENTRY | RETURN_BLOCK);
+  if (!empty_entry.empty) {
+    delete[] empty_entry.block;
+    if (this->extend_inode(this->current_directory_i_no,
+                           this->current_directory) == 1) {
+      for (size_t i = 0; i < dest_inode->i_blocks; ++i)
+        this->free_block(group_no, dest_inode->i_block[i]);
+
+      delete dest_inode;
+      delete[] dest_entry.block;
+      this->free_inode(dest_inode_no);
+      return;
+    }
+
+    empty_entry.block = (char *)this->make_directory_block();
+    empty_entry.directory = (dentry *)empty_entry.block;
+  }
+
+  empty_entry.directory->file_type = src_entry.directory->file_type;
+  empty_entry.directory->inode = dest_inode_no;
+  empty_entry.directory->name_len = strlen(dest_filename);
+  memcpy(empty_entry.directory->name, dest_filename,
+         empty_entry.directory->name_len);
+  this->write_block(group_no, this->current_directory, empty_entry.block_no,
+                    empty_entry.block);
+
+  delete dest_inode;
+  delete[] src_entry.block;
+  delete[] dest_entry.block;
   return;
 }
 
