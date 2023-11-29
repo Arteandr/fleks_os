@@ -745,7 +745,7 @@ void FS::make_file(const char *filename, u32 filename_size) {
 }
 
 u32 FS::write_file(const char *filename, void *data, u32 size) {
-  if (size / this->superblock->s_block_size > BLOCKS_COUNT)
+  if (std::ceil((float)size / this->superblock->s_block_size) > BLOCKS_COUNT)
     return 0;
 
   info_status entry = this->directory_info(
