@@ -692,7 +692,7 @@ void FS::log(std::string message, LogLevel log_level, bool new_line) {
     std::cout << std::endl;
 }
 
-void FS::make_file(const char *filename) {
+void FS::make_file(const char *filename, u32 filename_size) {
   if (std::strlen(filename) > FILE_NAME_LENGTH)
     return;
 
@@ -730,9 +730,8 @@ void FS::make_file(const char *filename) {
 
   empty_entry.directory->file_type = FILE_TYPE_FILE;
   empty_entry.directory->inode = inode_no;
-  empty_entry.directory->name_len = std::strlen(filename);
-  memcpy(empty_entry.directory->name, filename,
-         empty_entry.directory->name_len);
+  empty_entry.directory->name_len = filename_size;
+  memcpy(empty_entry.directory->name, filename, filename_size + 1);
   this->write_block(group_no, this->current_directory, empty_entry.block_no,
                     empty_entry.block);
 
@@ -859,7 +858,8 @@ void FS::remove(const char *filename) {
   return;
 }
 
-void FS::copy(const char *src_filename, const char *dest_filename) {
+void FS::copy(const char *src_filename, const char *dest_filename,
+              size_t dest_filename_size) {
   if (strlen(src_filename) == 0 || strlen(dest_filename) == 0)
     return;
   if (strlen(src_filename) > FILE_NAME_LENGTH ||
@@ -924,9 +924,8 @@ void FS::copy(const char *src_filename, const char *dest_filename) {
 
   empty_entry.directory->file_type = src_entry.directory->file_type;
   empty_entry.directory->inode = dest_inode_no;
-  empty_entry.directory->name_len = strlen(dest_filename);
-  memcpy(empty_entry.directory->name, dest_filename,
-         empty_entry.directory->name_len);
+  empty_entry.directory->name_len = dest_filename_size;
+  memcpy(empty_entry.directory->name, dest_filename, dest_filename_size + 1);
   this->write_block(group_no, this->current_directory, empty_entry.block_no,
                     empty_entry.block);
 
