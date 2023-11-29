@@ -370,6 +370,14 @@ void FS::free_inode(u32 inode_no) {
   bitmap *bm = this->get_inode_bitmap(group_no);
   bm->set_bit(inode_no, false);
   this->set_inode_bitmap(group_no, bm);
+
+  inode *inode_table = this->get_inode_table(group_no);
+  inode *empty_inode = new inode;
+  inode_table[inode_no] = *empty_inode;
+  this->set_inode_table(group_no, inode_table);
+
+  delete empty_inode;
+  delete bm;
 }
 
 u32 FS::create_inode(inode *i_node) {
@@ -619,7 +627,7 @@ void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
 
   if (!bm->get_bit(i->i_block[block_no] - group.bg_first_data_block)) {
     log(group_no,
-        "Попытка записать в занятый блок с номером " +
+        "Попытка записать в незанятый блок с номером " +
             std::to_string(i->i_block[block_no]),
         LogLevel::error);
     return;
@@ -635,8 +643,9 @@ void FS::write_block(u32 group_no, inode *i, u32 block_no, char *buffer) {
 }
 
 void FS::free_block(u32 group_no, u32 block_no) {
+  const group_desc &group = this->gdt[group_no];
   bitmap *bm = this->get_block_bitmap(group_no);
-  bm->set_bit(block_no, false);
+  bm->set_bit(block_no - group.bg_first_data_block, false);
   this->set_block_bitmap(group_no, bm);
 }
 
@@ -734,6 +743,35 @@ void FS::make_file(const char *filename) {
   FS::debug(filename);
 }
 
+void FS::remove(const char *filename) {
+  if (strlen(filename) == 0)
+    return;
+
+  info_status entry = this->directory_info(
+      filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
+  if (!entry.exist) {
+    delete[] entry.block;
+    return;
+  }
+
+  inode *i_node;
+  const u32 group_no =
+      std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
+  this->read_inode(entry.directory->inode, i_node);
+
+  entry.directory->file_type = FILE_TYPE_UNKNOWN;
+  memset(entry.directory->name, 0, entry.directory->name_len);
+  entry.directory->name_len = 0;
+  this->write_block(group_no, this->current_directory, entry.block_no,
+                    entry.block);
+  for (size_t i = 0; i < i_node->i_blocks; ++i)
+    this->free_block(group_no, i_node->i_block[i]);
+  this->free_inode(entry.directory->inode);
+
+  delete[] entry.block;
+  return;
+}
+
 void FS::rename(const char *old_filename, const char *new_filename) {
   if (strlen(old_filename) == 0)
     return;
@@ -799,6 +837,18 @@ void FS::list() {
       utils::calculate_column_widths(data, rows, columns);
 
   utils::output_aligned_data(data, rows, columns, column_widths);
+}
+
+void FS::print_inode_table(u32 group_no) {
+  const inode *inode_table = this->get_inode_table(group_no);
+  for (size_t i = 0; i < this->superblock->s_inodes_per_group; ++i) {
+    std::cout << (inode_table[i].i_blocks < 1 ? "0" : "1") << " ";
+    if ((i + 1) % 70 == 0)
+      std::cout << std::endl;
+  }
+
+  std::cout << std::endl;
+  delete inode_table;
 }
 
 void FS::info() {

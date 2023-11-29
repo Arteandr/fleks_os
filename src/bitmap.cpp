@@ -43,7 +43,7 @@ size_t bitmap::get_size() { return this->size; }
 void bitmap::print() {
   std::cout << "Битовая карта: " << std::endl;
   bool before_first_empty = true;
-  for (size_t i = 0; i < this->size * 8; ++i) {
+  for (size_t i = 0; i < (this->size * 8) / 2; ++i) {
     // std::cout << (this->get_bit(i) ? "1" : "0") << " ";
     bool result = this->get_bit(i);
     if (result) {
@@ -59,7 +59,7 @@ void bitmap::print() {
                   << " ";
     }
 
-    if ((i + 1) % 50 == 0)
+    if ((i + 1) % 70 == 0)
       std::cout << std::endl;
   }
   std::cout << std::endl;

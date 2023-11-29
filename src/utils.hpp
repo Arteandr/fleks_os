@@ -25,6 +25,16 @@ inline std::string current_time() {
   return oss.str();
 }
 
+template <typename T>
+inline void remove_by_index(T *&arr, size_t &size, size_t index) {
+  if (index < 0 || index >= size)
+    return;
+  for (size_t i = 0; i < size - 1; ++i)
+    arr[i] = arr[i + 1];
+
+  size--;
+}
+
 inline u32 current_time_to_u32() {
   std::time_t current_time = std::time(nullptr);
   u32 current_time_as_u32 = static_cast<u32>(current_time);

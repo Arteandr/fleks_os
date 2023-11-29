@@ -51,9 +51,6 @@ private:
   void read_inode(u32 inode_no, inode *&inode);
   char extend_inode(u32 inode_no, inode *i_node);
   void free_inode(u32 inode_no);
-  bitmap *get_block_bitmap(size_t block_group_no);
-  bitmap *get_inode_bitmap(size_t group_no);
-  inode *get_inode_table(u32 group_no);
   bool set_block_bitmap(size_t block_group_no, bitmap *bm);
   bool set_inode_bitmap(size_t group_no, bitmap *bm);
   bool set_inode_table(u32 group_no, inode *inode_table);
@@ -68,6 +65,9 @@ private:
   void read_root();
 
 public:
+  bitmap *get_block_bitmap(size_t block_group_no);
+  bitmap *get_inode_bitmap(size_t group_no);
+  inode *get_inode_table(u32 group_no);
   FS(std::string filename, bool with_root = false);
   static void format(size_t fs_size, size_t block_size);
   static void log(std::string message, LogLevel log_level = LogLevel::info,
@@ -80,6 +80,8 @@ public:
   void list();
   void make_file(const char *filename);
   void rename(const char *old_filename, const char *new_filename);
+  void remove(const char *filename);
+  void print_inode_table(u32 group_no);
 };
 
 #endif
