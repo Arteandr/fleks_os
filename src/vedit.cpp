@@ -1,4 +1,5 @@
 #include "../includes/vedit.hpp"
+#include "utils.hpp"
 #include <cstring>
 #include <curses.h>
 #include <ncurses.h>
@@ -37,7 +38,7 @@ std::string VisualEditor::tabs(std::string &line) {
 }
 
 void VisualEditor::open(const char *buffer) {
-  auto splited = split_by_newline(buffer);
+  auto splited = utils::split_by_newline(buffer);
   for (auto line : splited)
     this->append(line);
 }
@@ -243,13 +244,4 @@ void VisualEditor::update() {
                   " COLS: " + std::to_string(x) +
                   " | ROWS: " + std::to_string(y) + " | FILENAME: " + filename +
                   " ";
-}
-std::vector<std::string>
-VisualEditor::split_by_newline(const std::string &str) {
-  auto result = std::vector<std::string>{};
-  auto ss = std::stringstream{str};
-  for (std::string line; std::getline(ss, line, '\n');)
-    result.push_back(line);
-
-  return result;
 }

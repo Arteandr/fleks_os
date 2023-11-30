@@ -5,6 +5,8 @@
 #include "block_group.h"
 #include "dentry.h"
 #include "inode.h"
+#include "sha256.h"
+#include "shadow.h"
 #include "superblock.h"
 #include <fstream>
 #include <string>
@@ -61,6 +63,8 @@ private:
   void read_block(u32 group_no, inode *i, u32 block_no, char *&buffer);
   void make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
                             inode *i);
+  bool user_exist(const char *login);
+  u32 get_uid();
   dentry *make_directory_block();
   info_status directory_info(const char *name, u32 inode_no, u16 type);
   void read_root();
@@ -84,8 +88,10 @@ public:
   void print_inode_table(u32 group_no);
   void copy(const char *src_filename, const char *dest_filename,
             size_t dest_filename_size);
-  u32 read_file(const char *filename, void *&buffer);
+  size_t read_file(const char *filename, void *&buffer);
   u32 write_file(const char *filename, void *data, u32 size);
+  u32 add_user(const char *login, const char *password);
+  void users();
 };
 
 #endif

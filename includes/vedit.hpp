@@ -21,7 +21,6 @@ class VisualEditor {
   void draw();
   size_t lines_size();
   std::string tabs(std::string &line);
-  std::vector<std::string> split_by_newline(const std::string &str);
   void input(int c);
   void save();
 

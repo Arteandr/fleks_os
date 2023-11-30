@@ -352,6 +352,11 @@ void FS::format(size_t fs_size, size_t block_size) {
   fs->create_inode(FS_ROOT_INODE_NO, root);
 
   fs->read_root();
+  fs->current_uid = 0;
+  std::string shadow_filename = "shadow";
+  fs->make_file(shadow_filename.c_str(), shadow_filename.length());
+
+  fs->add_user("root", "root");
 
   FS::log("Файловая система успешно установлена");
   FS::debug("Для продолжения нажмите любую кнопку...");
@@ -435,10 +440,12 @@ bitmap *FS::get_inode_bitmap(size_t group_no) {
   const group_desc &group = this->gdt[group_no];
   fd.seekg(group.bg_inode_bitmap * this->superblock->s_block_size,
            std::ios::beg);
-  char *buffer = new char[this->superblock->s_block_size];
-  fd.read(buffer, this->superblock->s_block_size);
-  bitmap *bm = new bitmap(buffer, this->superblock->s_blocks_per_group);
-
+  char *buffer = new char[this->superblock->s_inodes_per_group / 8];
+  if (!fd.read(buffer, this->superblock->s_inodes_per_group / 8)) {
+    log("Ошибка при записи битовой карты inode", LogLevel::error);
+    return nullptr;
+  }
+  bitmap *bm = new bitmap(buffer, this->superblock->s_inodes_per_group);
   return bm;
 }
 
@@ -494,16 +501,21 @@ bool FS::set_block_bitmap(size_t group_no, bitmap *bm) {
 }
 
 void FS::read_inode(u32 inode_no, inode *&i) {
+  // std::cout << "current_inode[1]" << std::endl;
   const u32 group_no =
       std::ceil(inode_no / this->superblock->s_inodes_per_group);
+  // std::cout << "current_inode[2]" << std::endl;
   FS::debug("Чтение inode с номером " + std::to_string(inode_no) +
             " в группе: " + std::to_string(group_no));
+  // std::cout << "current_inode[3]" << std::endl;
   bitmap *bm = this->get_inode_bitmap(group_no);
+  // std::cout << "current_inode[4]" << std::endl;
   if (!bm->get_bit(inode_no)) {
     FS::log("Чтение пустого inode с номером " + std::to_string(inode_no),
             LogLevel::error);
     return;
   }
+  // std::cout << "current_inode[5]" << std::endl;
   // TODO: Добавить проверку на номер инода
   if (inode_no < 0) {
     i = nullptr;
@@ -709,6 +721,7 @@ void FS::make_file(const char *filename, u32 filename_size) {
   i_node->i_blocks = 1;
   i_node->i_block[0] = block_no;
   i_node->i_size = 0;
+  i_node->i_mode = S_IRUSR | S_IWUSR | S_IXUSR;
   i_node->i_uid = this->current_uid;
   i_node->i_ctime = utils::current_time_to_u32();
   u32 inode_no = this->create_inode(i_node);
@@ -745,9 +758,11 @@ void FS::make_file(const char *filename, u32 filename_size) {
 }
 
 u32 FS::write_file(const char *filename, void *data, u32 size) {
+  // std::cout << "t:1" << std::endl;
   if (std::ceil((float)size / this->superblock->s_block_size) > BLOCKS_COUNT)
     return 0;
 
+  // std::cout << "t:2" << std::endl;
   info_status entry = this->directory_info(
       filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
   if (!entry.exist) {
@@ -755,21 +770,23 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
     return 0;
   }
 
+  // std::cout << "t:3" << std::endl;
   if (entry.directory->file_type != FILE_TYPE_FILE) {
     delete[] entry.block;
     return 0;
   }
 
+  // std::cout << "t:4" << std::endl;
   const u32 group_no =
       std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
   inode *i_node;
   this->read_inode(entry.directory->inode, i_node);
 
+  // std::cout << "t:5" << std::endl;
   char *p = (char *)data;
   char *mem = nullptr;
   for (size_t i = 0;
        i < std::ceil((float)size / this->superblock->s_block_size); ++i) {
-    std::cout << "I: " << i << std::endl;
     if (i == i_node->i_blocks &&
         extend_inode(entry.directory->inode, i_node) == 1)
       return (i - 1) * this->superblock->s_block_size;
@@ -798,17 +815,17 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
   return 0;
 }
 
-u32 FS::read_file(const char *filename, void *&buffer) {
+size_t FS::read_file(const char *filename, void *&buffer) {
   info_status entry = this->directory_info(
       filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
   if (!entry.exist) {
     delete[] entry.block;
-    return 0;
+    return EOF;
   }
 
   if (entry.directory->file_type != FILE_TYPE_FILE) {
     delete[] entry.block;
-    return 0;
+    return -1;
   }
 
   const u32 group_no =
@@ -858,6 +875,92 @@ void FS::remove(const char *filename) {
 
   delete[] entry.block;
   return;
+}
+
+void FS::users() {
+  this->read_inode(this->current_directory_i_no, this->current_directory);
+  void *data;
+  size_t read_size = this->read_file("shadow", data);
+  shadow *users = (shadow *)data;
+  size_t users_count = read_size / sizeof(shadow);
+  std::vector<shadow> users_vec(users, users + users_count);
+  std::cout << "total " << users_vec.size() << std::endl << std::endl;
+  for (auto user : users_vec)
+    std::cout << user.uid << ":" << user.login << ":" << user.password
+              << std::endl;
+}
+
+u32 FS::add_user(const char *login, const char *password) {
+  // std::cout << "add_user[1]" << std::endl;
+  if (this->current_uid != 0)
+    return 0;
+
+  // std::cout << "add_user[2]" << std::endl;
+  if (std::strlen(login) == 0 || std::strlen(password) == 0)
+    return 0;
+
+  // std::cout << "add_user[3]" << std::endl;
+  if (this->user_exist(login)) {
+    log("Пользователь уже есть в системе", LogLevel::error);
+    return 0;
+  }
+
+  // std::cout << "add_user[4]" << std::endl;
+  this->read_inode(this->current_directory_i_no, this->current_directory);
+  // std::cout << "add_user[5]" << std::endl;
+  void *data;
+  size_t read_size = this->read_file("shadow", data);
+  // std::cout << "read_size: " << read_size << std::endl;
+  shadow *users = (shadow *)data;
+  size_t users_count = read_size / sizeof(shadow);
+  u32 avaible_uid = this->get_uid();
+  shadow *new_user = new shadow;
+  new_user->uid = avaible_uid;
+  memcpy(new_user->login, login, strlen(login));
+  sha256_easy_hash_hex(password, strlen(password), new_user->password);
+
+  shadow *new_users = new shadow[users_count + 1];
+  memcpy(new_users, users, (users_count + 1) * sizeof(shadow));
+  new_users[users_count] = *new_user;
+
+  this->write_file("shadow", (void *)new_users,
+                   (users_count + 1) * sizeof(shadow));
+
+  return avaible_uid;
+}
+
+u32 FS::get_uid() {
+  if (this->current_uid != 0)
+    return -1;
+
+  this->read_inode(this->current_directory_i_no, this->current_directory);
+  void *data;
+  size_t read_size = this->read_file("shadow", data);
+  shadow *users = (shadow *)data;
+  size_t users_count = read_size / sizeof(shadow);
+  std::vector<shadow> users_vec(users, users + users_count);
+  if (users_vec.size() < 1)
+    return 0;
+
+  return (users_vec[users_vec.size() - 1].uid) + 1;
+}
+
+bool FS::user_exist(const char *login) {
+  if (this->current_uid != 0)
+    return false;
+
+  this->read_inode(this->current_directory_i_no, this->current_directory);
+  void *data;
+  size_t read_size = this->read_file("shadow", data);
+  shadow *users = (shadow *)data;
+  size_t users_count = read_size / sizeof(shadow);
+  std::vector<shadow> users_vec(users, users + users_count);
+  for (auto user : users_vec) {
+    if (strcmp(user.login, login) == 0)
+      return true;
+  }
+
+  return false;
 }
 
 void FS::copy(const char *src_filename, const char *dest_filename,
@@ -975,6 +1078,10 @@ void FS::rename(const char *old_filename, const char *new_filename) {
   return;
 }
 
+bool have_perm(const inode &i_node, u32 permission) {
+  return (i_node.i_mode & permission) == permission;
+}
+
 void FS::list() {
   info_status stat =
       this->directory_info(nullptr, this->current_directory_i_no, ALL_ENTRIES);
@@ -983,13 +1090,40 @@ void FS::list() {
   if (stat.found_count < 1)
     return;
 
-  std::vector<std::string> data = {"uid", "size", "ctime", "name"};
+  std::vector<std::string> data = {"perm", "uid", "size", "ctime", "name"};
   size_t rows = stat.found_count + 1;
   size_t columns = data.size();
 
   for (size_t i = 0; i < stat.found_count; ++i) {
     inode *i_node;
     this->read_inode(stat.directory[i].inode, i_node);
+    std::stringstream perm_ss;
+    if (i_node->mode(S_IRUSR))
+      perm_ss << "r";
+    else
+      perm_ss << "-";
+    if (i_node->mode(S_IWUSR))
+      perm_ss << "w";
+    else
+      perm_ss << "-";
+    if (i_node->mode(S_IXUSR))
+      perm_ss << "x";
+    else
+      perm_ss << "-";
+    if (i_node->mode(S_IROTH))
+      perm_ss << "r";
+    else
+      perm_ss << "-";
+    if (i_node->mode(S_IWOTH))
+      perm_ss << "w";
+    else
+      perm_ss << "-";
+    if (i_node->mode(S_IXOTH))
+      perm_ss << "x";
+    else
+      perm_ss << "-";
+    data.push_back(perm_ss.str());
+
     data.push_back(std::to_string(i_node->i_uid));
     data.push_back(std::to_string(i_node->i_size));
     data.push_back(utils::current_time_from_u32(i_node->i_ctime));

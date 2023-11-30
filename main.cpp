@@ -1,4 +1,3 @@
-#include "includes/bitmap.h"
 #include "includes/console.h"
 #include "includes/executor.h"
 #include "includes/fs.h"
@@ -11,6 +10,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>

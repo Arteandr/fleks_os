@@ -9,6 +9,7 @@
 #include "../includes/os_status.h"
 #include "../includes/rename.h"
 #include "../includes/rm.h"
+#include "../includes/users.h"
 #include "../includes/write.h"
 #include <iostream>
 #include <ostream>
@@ -24,7 +25,8 @@ Executor::Executor(FS *fs) {
       {"ls", new ListCommand(fs)},       {"file", new MakeFileCommand(fs)},
       {"rename", new RenameCommand(fs)}, {"bm", new BmCommand(fs)},
       {"rm", new RemoveCommand(fs)},     {"cp", new CopyCommand(fs)},
-      {"vedit", new WriteCommand(fs)},   {"cat", new CatCommand(fs)}};
+      {"vedit", new WriteCommand(fs)},   {"cat", new CatCommand(fs)},
+      {"usr", new UsersCommand(fs)}};
   int commands_count = sizeof(all_commands) / sizeof(all_commands[0]);
 
   for (int i = 0; i < commands_count; i++)

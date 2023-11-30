@@ -24,17 +24,14 @@ inline std::string current_time() {
 
   return oss.str();
 }
+inline std::vector<std::string> split_by_newline(const std::string &str) {
+  auto result = std::vector<std::string>{};
+  auto ss = std::stringstream{str};
+  for (std::string line; std::getline(ss, line, '\n');)
+    result.push_back(line);
 
-template <typename T>
-inline void remove_by_index(T *&arr, size_t &size, size_t index) {
-  if (index < 0 || index >= size)
-    return;
-  for (size_t i = 0; i < size - 1; ++i)
-    arr[i] = arr[i + 1];
-
-  size--;
+  return result;
 }
-
 inline u32 current_time_to_u32() {
   std::time_t current_time = std::time(nullptr);
   u32 current_time_as_u32 = static_cast<u32>(current_time);

@@ -24,8 +24,8 @@ typedef struct inode {
   u32 i_size;  // Размер файла в байтах
   u32 i_ctime; // Количество секунд с 1 января 1970 с момента создания i-нода
   u32 i_blocks; // Количество блоков
-  u32 i_flags;  // Флаги доступа
   u32 i_block[BLOCKS_COUNT]; // Указатель на блоки данных этого i-нода
+  inline bool mode(u16 m) { return (i_mode & m) == m; };
 } inode;
 
 #endif // !INODE_H
