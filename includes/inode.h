@@ -3,13 +3,13 @@
 
 #define INODE_SIZE 128
 
-#define S_IRUSR 0x0100 // user read
-#define S_IWUSR 0x0080 // user write
-#define S_IXUSR 0x0040 // user execute
+#define S_IRUSR 0x0020 // user read
+#define S_IWUSR 0x0010 // user write
+#define S_IXUSR 0x0008 // user execute
 
-#define S_IRGRP 0x0020 // group read
-#define S_IWGRP 0x0010 // group write
-#define S_IXGRP 0x0008 // group execute
+// #define S_IRGRP 0x0020 // group read
+// #define S_IWGRP 0x0010 // group write
+// #define S_IXGRP 0x0008 // group execute
 
 #define S_IROTH 0x0004 // other read
 #define S_IWOTH 0x0002 // other write

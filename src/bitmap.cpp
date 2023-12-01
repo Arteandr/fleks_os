@@ -10,12 +10,10 @@ bitmap::bitmap(size_t count) {
 }
 
 bitmap::bitmap(char *buffer, size_t count) {
-  // std::cout << "inside bitmap[1]" << std::endl;
-  // this->bit_map = (u8 *)calloc(count / 8, sizeof(u8));
   this->bit_map = new u8[count / 8];
-  // std::cout << "inside bitmap[2]" << std::endl;
-  memcpy(this->bit_map, buffer, count / 8);
-  // std::cout << "inside bitmap[3]" << std::endl;
+  // memcpy(this->bit_map, buffer, (count / 8) * sizeof(u8));
+  for (size_t i = 0; i < count / 8; ++i)
+    this->bit_map[i] = (u8)buffer[i];
   this->size = count / 8;
 }
 

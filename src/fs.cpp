@@ -357,6 +357,7 @@ void FS::format(size_t fs_size, size_t block_size) {
   fs->make_file(shadow_filename.c_str(), shadow_filename.length());
 
   fs->add_user("root", "root");
+  // fs->add_user("hwndrer", "root");
 
   FS::log("Файловая система успешно установлена");
   FS::debug("Для продолжения нажмите любую кнопку...");
@@ -440,11 +441,14 @@ bitmap *FS::get_inode_bitmap(size_t group_no) {
   const group_desc &group = this->gdt[group_no];
   fd.seekg(group.bg_inode_bitmap * this->superblock->s_block_size,
            std::ios::beg);
-  char *buffer = new char[this->superblock->s_inodes_per_group / 8];
+  // char *buffer = new char[this->superblock->s_inodes_per_group / 8];
+  char *buffer =
+      (char *)calloc(this->superblock->s_inodes_per_group / 8, sizeof(char));
   if (!fd.read(buffer, this->superblock->s_inodes_per_group / 8)) {
     log("Ошибка при записи битовой карты inode", LogLevel::error);
     return nullptr;
   }
+
   bitmap *bm = new bitmap(buffer, this->superblock->s_inodes_per_group);
   return bm;
 }
@@ -815,6 +819,23 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
   return 0;
 }
 
+std::string FS::get_current_username() {
+  if (this->current_directory == nullptr)
+    return "root";
+
+  this->read_inode(this->current_directory_i_no, this->current_directory);
+  void *data;
+  size_t read_size = this->read_file("shadow", data);
+  shadow *users = (shadow *)data;
+  size_t users_count = read_size / sizeof(shadow);
+  std::vector<shadow> users_vec(users, users + users_count);
+  for (auto it = users_vec.begin(); it != users_vec.end(); ++it)
+    if (it->uid == this->current_uid)
+      return it->login;
+
+  return "root";
+}
+
 size_t FS::read_file(const char *filename, void *&buffer) {
   info_status entry = this->directory_info(
       filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
@@ -1080,6 +1101,40 @@ void FS::rename(const char *old_filename, const char *new_filename) {
 
 bool have_perm(const inode &i_node, u32 permission) {
   return (i_node.i_mode & permission) == permission;
+}
+
+void FS::chmod(const char *filename, u32 access) {
+  info_status entry = this->directory_info(
+      filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
+  if (!entry.exist) {
+    delete[] entry.block;
+    return;
+  }
+
+  inode *i_node;
+  this->read_inode(entry.directory->inode, i_node);
+  if (i_node->i_uid != this->current_uid != 0) {
+    delete[] entry.block;
+    return;
+  }
+  u8 user = access / 10;
+  u8 other = access % 10;
+  if (access < 0) {
+    delete[] entry.block;
+    return;
+  }
+
+  u32 new_access = 0;
+  i_node->i_mode = new_access | (user << 3) | other;
+
+  const u32 group_no =
+      std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
+
+  inode *inode_table = this->get_inode_table(group_no);
+  inode_table[entry.directory->inode] = *i_node;
+  this->set_inode_table(group_no, inode_table);
+
+  return;
 }
 
 void FS::list() {

@@ -1,6 +1,7 @@
 #include "../includes/executor.h"
 #include "../includes/bm.h"
 #include "../includes/cat.h"
+#include "../includes/chmod.h"
 #include "../includes/clear.h"
 #include "../includes/cp.h"
 #include "../includes/exit.h"
@@ -11,8 +12,6 @@
 #include "../includes/rm.h"
 #include "../includes/users.h"
 #include "../includes/write.h"
-#include <iostream>
-#include <ostream>
 #include <string>
 #include <vector>
 
@@ -26,7 +25,7 @@ Executor::Executor(FS *fs) {
       {"rename", new RenameCommand(fs)}, {"bm", new BmCommand(fs)},
       {"rm", new RemoveCommand(fs)},     {"cp", new CopyCommand(fs)},
       {"vedit", new WriteCommand(fs)},   {"cat", new CatCommand(fs)},
-      {"usr", new UsersCommand(fs)}};
+      {"usr", new UsersCommand(fs)},     {"chmod", new ChmodCommand(fs)}};
   int commands_count = sizeof(all_commands) / sizeof(all_commands[0]);
 
   for (int i = 0; i < commands_count; i++)
