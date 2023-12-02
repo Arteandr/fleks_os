@@ -56,6 +56,7 @@ void start() {
 void install() {
   std::string curr_time;
   u32 fs_size, block_size;
+  std::string password;
   ConsoleInput *input = nullptr;
   std::string error = "";
 
@@ -120,8 +121,34 @@ void install() {
     break;
   }
 
+  while (mainLoop) {
+    clear();
+    curr_time = utils::current_time();
+    FS::log("Размер файловой системы: \x1B[31m" + std::to_string(fs_size) +
+            " Мбайт\033[0m\n");
+    FS::log("Выбранный размер блока: \x1B[31m" + std::to_string(block_size) +
+            " КиБ\033[0m\n");
+    if (error.length() > 0)
+      FS::log(error, LogLevel::error);
+
+    FS::log("Введите пароль суперпользователя (root): ", LogLevel::info, false);
+    input = Console::prompt();
+    if (input->cmd.length() < 1)
+      continue;
+    else {
+      if (input->cmd.length() > 15) {
+        error = "Введено неверное число.";
+        continue;
+      }
+      password = input->cmd;
+    }
+
+    error.clear();
+    break;
+  }
+
   clear();
-  FS::format(fs_size * 1024 * 1024, block_size);
+  FS::format(fs_size * 1024 * 1024, block_size, password);
   system("stty raw");
   getchar();
   system("stty cooked");

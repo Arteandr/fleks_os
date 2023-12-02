@@ -73,7 +73,8 @@ public:
   bitmap *get_block_bitmap(size_t block_group_no);
   bitmap *get_inode_bitmap(size_t group_no);
   FS(std::string filename, bool with_root = false);
-  static void format(size_t fs_size, size_t block_size);
+  static void format(size_t fs_size, size_t block_size,
+                     std::string root_password);
   static void log(std::string message, LogLevel log_level = LogLevel::info,
                   bool new_line = true);
   static void log(u32 group_no, std::string message,

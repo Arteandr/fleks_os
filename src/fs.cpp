@@ -166,7 +166,7 @@ info_status FS::directory_info(const char *name, u32 inode_no, u16 type) {
 
 // fs_size - Размер ФС в байтах
 // block_size - Размер блока в байтах
-void FS::format(size_t fs_size, size_t block_size) {
+void FS::format(size_t fs_size, size_t block_size, std::string root_password) {
   FS::log("Запуск форматирования файловой системы");
   FS::log("Размер ФС (байт): " + std::to_string(fs_size));
   FS::log("Размер блока (байт): " + std::to_string(block_size));
@@ -356,7 +356,8 @@ void FS::format(size_t fs_size, size_t block_size) {
   std::string shadow_filename = "shadow";
   fs->make_file(shadow_filename.c_str(), shadow_filename.length());
 
-  fs->add_user("root", "root");
+  std::cout << "TEST PASSWORD: ", root_password.c_str();
+  fs->add_user("root", root_password.c_str());
   // fs->add_user("hwndrer", "root");
 
   FS::log("Файловая система успешно установлена");
@@ -587,27 +588,10 @@ dentry *FS::make_directory_block() {
 
 void FS::make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
                               inode *i) {
-  // dentry *current_directory = new dentry();
-  // current_directory->inode = inode_no;
-  // current_directory->file_type = FILE_TYPE_DIR;
-  // current_directory->name_len = 1;
-  // current_directory->rec_len = sizeof(dentry);
-  // memcpy(current_directory->name, ".", 1);
-
-  // dentry *parent_directory = new dentry();
-  // parent_directory->inode = parent_inode_no;
-  // parent_directory->file_type = FILE_TYPE_DIR;
-  // parent_directory->name_len = 2;
-  // parent_directory->rec_len = sizeof(dentry);
-  // memcpy(parent_directory->name, "..", 2);
-
   dentry *directories = make_directory_block();
-
-  // directories[0] = *current_directory;
   this->write_block(group_no, i, 0, reinterpret_cast<char *>(directories));
 
   delete[] directories;
-  // delete current_directory;
 }
 
 void FS::read_block(u32 group_no, inode *i, u32 block_no, char *&buffer) {
@@ -846,13 +830,20 @@ size_t FS::read_file(const char *filename, void *&buffer) {
 
   if (entry.directory->file_type != FILE_TYPE_FILE) {
     delete[] entry.block;
-    return -1;
+    return EOF;
   }
 
   const u32 group_no =
       std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
   inode *i_node;
   this->read_inode(entry.directory->inode, i_node);
+
+  if (!(i_node->i_uid == current_uid && i_node->mode(S_IRUSR)) &&
+      !(i_node->i_uid != current_uid && i_node->mode(S_IROTH)) &&
+      this->current_uid != 0) {
+    delete[] entry.block;
+    return EOF;
+  }
 
   char *ret = new char[i_node->i_size];
   char *p = ret;
@@ -885,6 +876,13 @@ void FS::remove(const char *filename) {
       std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
   this->read_inode(entry.directory->inode, i_node);
 
+  if (!(i_node->i_uid == current_uid && i_node->mode(S_IWUSR)) &&
+      !(i_node->i_uid != current_uid && i_node->mode(S_IWOTH)) &&
+      this->current_uid != 0) {
+    delete[] entry.block;
+    return;
+  }
+
   entry.directory->file_type = FILE_TYPE_UNKNOWN;
   memset(entry.directory->name, 0, entry.directory->name_len);
   entry.directory->name_len = 0;
@@ -909,6 +907,8 @@ void FS::users() {
   for (auto user : users_vec)
     std::cout << user.uid << ":" << user.login << ":" << user.password
               << std::endl;
+
+  delete[] users;
 }
 
 u32 FS::add_user(const char *login, const char *password) {
@@ -1084,6 +1084,13 @@ void FS::rename(const char *old_filename, const char *new_filename) {
   info_status entry_new = this->directory_info(
       new_filename, this->current_directory_i_no, SAME_ENTRY);
 
+  if (!(i_node->i_uid == current_uid && i_node->mode(S_IWUSR)) &&
+      !(i_node->i_uid != current_uid && i_node->mode(S_IWOTH)) &&
+      this->current_uid != 0) {
+    delete[] entry.block;
+    return;
+  }
+
   if (entry_new.exist) {
     return;
   }
@@ -1099,10 +1106,6 @@ void FS::rename(const char *old_filename, const char *new_filename) {
   return;
 }
 
-bool have_perm(const inode &i_node, u32 permission) {
-  return (i_node.i_mode & permission) == permission;
-}
-
 void FS::chmod(const char *filename, u32 access) {
   info_status entry = this->directory_info(
       filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
@@ -1113,10 +1116,11 @@ void FS::chmod(const char *filename, u32 access) {
 
   inode *i_node;
   this->read_inode(entry.directory->inode, i_node);
-  if (i_node->i_uid != this->current_uid != 0) {
+  if (this->current_uid != 0 && i_node->i_uid != this->current_uid != 0) {
     delete[] entry.block;
     return;
   }
+
   u8 user = access / 10;
   u8 other = access % 10;
   if (access < 0) {
