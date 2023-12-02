@@ -356,9 +356,7 @@ void FS::format(size_t fs_size, size_t block_size, std::string root_password) {
   std::string shadow_filename = "shadow";
   fs->make_file(shadow_filename.c_str(), shadow_filename.length());
 
-  std::cout << "TEST PASSWORD: ", root_password.c_str();
   fs->add_user("root", root_password.c_str());
-  // fs->add_user("hwndrer", "root");
 
   FS::log("Файловая система успешно установлена");
   FS::debug("Для продолжения нажмите любую кнопку...");
