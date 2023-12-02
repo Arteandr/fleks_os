@@ -128,15 +128,11 @@ void install() {
 
     FS::log("Введите пароль суперпользователя (root): ", LogLevel::info, false);
     input = Console::prompt();
-    if (input->cmd.length() < 1)
+    if (input->cmd.length() < 1 || input->cmd.length() > 15) {
+      error = "Введено неверное число.";
       continue;
-    else {
-      if (input->cmd.length() > 15) {
-        error = "Введено неверное число.";
-        continue;
-      }
+    } else
       password = input->cmd;
-    }
 
     error.clear();
     break;

@@ -92,6 +92,7 @@ public:
   size_t read_file(const char *filename, void *&buffer);
   u32 write_file(const char *filename, void *data, u32 size);
   u32 add_user(const char *login, const char *password);
+  void add_user_prompt();
   std::string get_current_username();
   void chmod(const char *filename, u32 access);
   void users();
