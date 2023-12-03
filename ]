@@ -3,14 +3,17 @@
 #include "../includes/superblock.h"
 #include "inode.h"
 #include "utils.hpp"
+#include <algorithm>
 #include <cerrno>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
 #include <ios>
 #include <iostream>
+#include <iterator>
 #include <pstl/glue_execution_defs.h>
 #include <sstream>
 #include <stdexcept>
@@ -870,9 +873,8 @@ void FS::remove(const char *filename) {
   this->read_inode(entry.directory->inode, i_node);
 
   if (i_node->mode(S_SYSTEM)) {
-    log("Невозможно удалить системный файл \"" +
-            std::string(entry.directory->name) + "\"",
-        LogLevel::error);
+    log("Невозможно удалить системный файл " +
+        std::string(entry.directory->name));
     delete[] entry.block;
     return;
   }

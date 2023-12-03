@@ -83,7 +83,7 @@ public:
                   LogLevel log_level = LogLevel::info);
   void info();
   void list();
-  void make_file(const char *filename, u32 size);
+  void make_file(const char *filename, u32 size, u16 access = 0);
   void rename(const char *old_filename, const char *new_filename);
   void remove(const char *filename);
   void print_inode_table(u32 group_no);

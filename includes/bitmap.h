@@ -3,7 +3,6 @@
 
 #include "shared.h"
 #include <cstddef>
-#include <cstdint>
 
 class bitmap {
   size_t size;
@@ -11,7 +10,7 @@ class bitmap {
 
 public:
   bitmap(size_t count);
-  bitmap(char *buffer, size_t count);
+  bitmap(void *buffer, u32 count);
 
   void set_bit(size_t position, u8 flag);
   bool get_bit(size_t position);

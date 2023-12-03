@@ -4,3 +4,6 @@ cmake_install.cmake
 Makefile
 main
 filesystem
+.vscode
+build
+.cache

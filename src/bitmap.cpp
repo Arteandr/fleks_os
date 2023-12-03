@@ -4,16 +4,15 @@
 #include <iostream>
 
 bitmap::bitmap(size_t count) {
-  // this->bit_map = (u8 *)calloc(count / 8, sizeof(u8));
   this->bit_map = new u8[count / 8];
   this->size = count / 8;
 }
 
-bitmap::bitmap(char *buffer, size_t count) {
+bitmap::bitmap(void *buffer, u32 count) {
   this->bit_map = new u8[count / 8];
-  // memcpy(this->bit_map, buffer, (count / 8) * sizeof(u8));
-  for (size_t i = 0; i < count / 8; ++i)
-    this->bit_map[i] = (u8)buffer[i];
+  memcpy(this->bit_map, buffer, count / 8 * sizeof(u8));
+  // for (size_t i = 0; i < count / 8; ++i)
+  //   this->bit_map[i] = (u8)buffer[i];
   this->size = count / 8;
 }
 
