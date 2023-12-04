@@ -354,11 +354,10 @@ void FS::format(size_t fs_size, size_t block_size, std::string root_password) {
 
   fs->add_user("root", root_password.c_str());
 
-  FS::log("Файловая система успешно установлена");
-  FS::debug("Для продолжения нажмите любую кнопку...");
-
   delete fs;
   delete root;
+  FS::log("Файловая система успешно установлена");
+  FS::debug("Для продолжения нажмите любую кнопку...");
 }
 
 void FS::read_root() {
@@ -925,12 +924,9 @@ u32 FS::add_user(const char *login, const char *password) {
     return 0;
   }
 
-  // std::cout << "add_user[4]" << std::endl;
   // this->read_inode(this->current_directory_i_no, this->current_directory);
-  // std::cout << "add_user[5]" << std::endl;
   void *data;
   size_t read_size = this->read_file("shadow", data);
-  // std::cout << "read_size: " << read_size << std::endl;
   shadow *users = (shadow *)data;
   size_t users_count = read_size / sizeof(shadow);
   u32 avaible_uid = this->get_uid();
@@ -947,6 +943,40 @@ u32 FS::add_user(const char *login, const char *password) {
                    (users_count + 1) * sizeof(shadow));
 
   return avaible_uid;
+}
+
+bool FS::delete_user(u32 uid) {
+  if (uid == this->current_uid || uid == 0) {
+    log("Невозможно удалить текущего пользователя", LogLevel::error);
+    return false;
+  }
+  std::cout << "test 1" << std::endl;
+
+  if (!this->user_exist(uid)) {
+    log("Пользователя с uid " + std::to_string(uid) + " не существует",
+        LogLevel::error);
+    return false;
+  }
+  std::cout << "test 2" << std::endl;
+
+  void *data;
+  std::cout << "test 3" << std::endl;
+  size_t read_size = this->read_file("shadow", data);
+  std::cout << "test 4" << std::endl;
+  shadow *users = (shadow *)data;
+  std::cout << "test 5" << std::endl;
+  size_t users_count = read_size / sizeof(shadow);
+  shadow *new_users = new shadow[users_count - 1];
+  for (size_t i = 0; i < users_count; ++i) {
+    const shadow *user = &users[i];
+    if (user->uid != uid)
+      memcpy(new_users + i, user, sizeof(shadow));
+  }
+
+  this->write_file("shadow", (void *)new_users,
+                   (users_count - 1) * sizeof(shadow));
+
+  return true;
 }
 
 u32 FS::get_uid() {
@@ -977,6 +1007,24 @@ bool FS::user_exist(const char *login) {
   std::vector<shadow> users_vec(users, users + users_count);
   for (auto user : users_vec) {
     if (strcmp(user.login, login) == 0)
+      return true;
+  }
+
+  return false;
+}
+
+bool FS::user_exist(u32 uid) {
+  if (this->current_uid != 0)
+    return false;
+
+  this->read_inode(this->current_directory_i_no, this->current_directory);
+  void *data;
+  size_t read_size = this->read_file("shadow", data);
+  shadow *users = (shadow *)data;
+  size_t users_count = read_size / sizeof(shadow);
+  std::vector<shadow> users_vec(users, users + users_count);
+  for (auto user : users_vec) {
+    if (user.uid == uid)
       return true;
   }
 

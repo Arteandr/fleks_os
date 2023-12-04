@@ -13,7 +13,7 @@ int ChmodCommand::execute(std::vector<std::string> args) {
     return OS_SUCCESS;
   }
 
-  this->fs->chmod(args[0].c_str(), access);
+  this->fs.chmod(args[0].c_str(), access);
 
   return OS_SUCCESS;
 };

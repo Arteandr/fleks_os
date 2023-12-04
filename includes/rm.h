@@ -6,6 +6,6 @@ class RemoveCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  RemoveCommand(FS *fs) : Command(fs){};
+  RemoveCommand(FS &fs) : Command(fs){};
 };
 #endif // !REMOVE_CMD_H

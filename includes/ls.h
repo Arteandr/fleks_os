@@ -6,7 +6,7 @@ class ListCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  ListCommand(FS *fs) : Command(fs){};
+  ListCommand(FS &fs) : Command(fs){};
 };
 
 #endif // !LS_CMD_H

@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 class Executor {
-  std::map<std::string, Command *> cmds;
 
 public:
-  Executor(FS *fs);
+  std::map<std::string, Command *> cmds;
+  Executor(FS &fs);
   ~Executor();
   int execute(std::string cmd, std::vector<std::string> args);
 };

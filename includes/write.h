@@ -6,6 +6,6 @@ class WriteCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  WriteCommand(FS *fs) : Command(fs){};
+  WriteCommand(FS &fs) : Command(fs){};
 };
 #endif // !DEBUG

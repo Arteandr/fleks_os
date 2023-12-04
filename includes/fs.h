@@ -64,6 +64,7 @@ private:
   void make_empty_directory(u32 group_no, u32 inode_no, u32 parent_inode_no,
                             inode *i);
   bool user_exist(const char *login);
+  bool user_exist(u32 uid);
   u32 get_uid();
   dentry *make_directory_block();
   info_status directory_info(const char *name, u32 inode_no, u16 type);
@@ -92,6 +93,7 @@ public:
   size_t read_file(const char *filename, void *&buffer);
   u32 write_file(const char *filename, void *data, u32 size);
   u32 add_user(const char *login, const char *password);
+  bool delete_user(u32 uid);
   void add_user_prompt();
   std::string get_current_username();
   void chmod(const char *filename, u32 access);

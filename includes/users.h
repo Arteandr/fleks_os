@@ -6,6 +6,6 @@ class UsersCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  UsersCommand(FS *fs) : Command(fs){};
+  UsersCommand(FS &fs) : Command(fs){};
 };
 #endif // !DEBUG

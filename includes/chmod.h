@@ -6,6 +6,6 @@ class ChmodCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  ChmodCommand(FS *fs) : Command(fs){};
+  ChmodCommand(FS &fs) : Command(fs){};
 };
 #endif // !DEBUG

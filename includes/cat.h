@@ -6,6 +6,6 @@ class CatCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  CatCommand(FS *fs) : Command(fs){};
+  CatCommand(FS &fs) : Command(fs){};
 };
 #endif // !DEBUG

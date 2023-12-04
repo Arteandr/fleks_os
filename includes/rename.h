@@ -7,6 +7,6 @@ class RenameCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  RenameCommand(FS *fs) : Command(fs){};
+  RenameCommand(FS &fs) : Command(fs){};
 };
 #endif

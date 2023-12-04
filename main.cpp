@@ -7,12 +7,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 #define OS_NAME "fleksOS"
-using namespace std;
 
+using namespace std;
 void clear() { system("clear"); }
 
 void start() {
@@ -21,21 +20,22 @@ void start() {
 
   try {
     fs = new FS(FS_FILENAME, true);
-  } catch (const runtime_error &e) {
+  } catch (std::exception e) {
     FS::log(e.what(), LogLevel::error);
     delete fs;
     return;
   }
 
-  Executor *executor = new Executor(fs);
+  Executor *executor = new Executor(*fs);
   bool mainLoop = true;
   while (mainLoop) {
     std::string curr_time = utils::current_time();
-    cout << "\x1B[31m" << curr_time << " " << OS_NAME << "@"
-         << "hwndrer"
-         << ":~$ \033[0m";
+    std::cout << "\x1B[31m" << curr_time << " " << OS_NAME << "@"
+              << "user"
+              << ":~$ \033[0m";
+
     ConsoleInput *input = Console::prompt();
-    if (input->cmd.length() > 0)
+    if (input->cmd.length() > 0) {
       switch (executor->execute(input->cmd, input->args)) {
       case OS_ERROR:
         printf("Команда '%s' не найдена\n", input->cmd.c_str());
@@ -45,6 +45,7 @@ void start() {
         clear();
         break;
       }
+    }
   }
 }
 
@@ -122,7 +123,7 @@ void install() {
     FS::log("Размер файловой системы: \x1B[31m" + std::to_string(fs_size) +
             " Мбайт\033[0m\n");
     FS::log("Выбранный размер блока: \x1B[31m" + std::to_string(block_size) +
-            " КиБ\033[0m\n");
+            " Байт\033[0m\n");
     if (error.length() > 0)
       FS::log(error, LogLevel::error);
 
@@ -143,8 +144,6 @@ void install() {
   system("stty raw");
   getchar();
   system("stty cooked");
-
-  start();
 }
 
 void logo() {
@@ -192,7 +191,6 @@ int main() {
         start();
         break;
       case 2:
-        loop = false;
         install();
         break;
       case 3:

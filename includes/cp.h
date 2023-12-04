@@ -6,6 +6,6 @@ class CopyCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  CopyCommand(FS *fs) : Command(fs){};
+  CopyCommand(FS &fs) : Command(fs){};
 };
 #endif // !DEBUG

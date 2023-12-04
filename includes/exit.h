@@ -6,6 +6,6 @@ class ExitCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  ExitCommand(FS *fs) : Command(fs){};
+  ExitCommand(FS &fs) : Command(fs){};
 };
 #endif // !DEBUG

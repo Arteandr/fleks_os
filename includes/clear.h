@@ -6,6 +6,6 @@ class ClearCommand : public Command {
   virtual int execute(std::vector<std::string>);
 
 public:
-  ClearCommand(FS *fs) : Command(fs){};
+  ClearCommand(FS &fs) : Command(fs){};
 };
 #endif // !DEBUG

@@ -1,8 +1,6 @@
 #include "../includes/bm.h"
 #include "../includes/os_status.h"
 #include <cstdlib>
-#include <iostream>
-#include <ostream>
 
 int BmCommand::execute(std::vector<std::string> args) {
   if (args.size() < 1 || args.size() > 2)
@@ -13,13 +11,13 @@ int BmCommand::execute(std::vector<std::string> args) {
   bitmap *bm;
 
   if (arg == "block") {
-    bm = this->fs->get_block_bitmap(group_no);
+    bm = this->fs.get_block_bitmap(group_no);
     bm->print();
   } else if (arg == "inode") {
-    bm = this->fs->get_inode_bitmap(group_no);
+    bm = this->fs.get_inode_bitmap(group_no);
     bm->print();
   } else if (arg == "table") {
-    this->fs->print_inode_table(group_no);
+    this->fs.print_inode_table(group_no);
   }
 
   delete bm;
