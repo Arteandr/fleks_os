@@ -40,10 +40,8 @@ Executor::Executor(FS &fs) {
 Executor::~Executor() {}
 
 int Executor::execute(std::string cmd, std::vector<std::string> args) {
-  auto old_map = this->cmds;
   if (this->cmds.count(cmd)) {
     int status = this->cmds.at(cmd)->execute(args);
-    this->cmds = old_map;
     return status;
   } else
     return OS_ERROR;

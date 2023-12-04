@@ -28,10 +28,10 @@ void start() {
   Executor *executor = new Executor(*fs);
   bool mainLoop = true;
   while (mainLoop) {
+    // auto old_map = executor->cmds;
     std::string curr_time = utils::current_time();
     std::cout << "\x1B[31m" << curr_time << " " << OS_NAME << "@"
-              << "user"
-              << ":~$ \033[0m";
+              << fs->get_current_username() << ":~$ \033[0m";
 
     ConsoleInput *input = Console::prompt();
     if (input->cmd.length() > 0) {
@@ -47,6 +47,7 @@ void start() {
         continue;
       }
     }
+    // executor->cmds = old_map;
   }
 }
 

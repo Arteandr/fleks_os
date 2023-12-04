@@ -1,7 +1,5 @@
 #include "../includes/cp.h"
 #include "../includes/os_status.h"
-#include <iostream>
-#include <ostream>
 
 int CopyCommand::execute(std::vector<std::string> args) {
   if (args.size() != 2)

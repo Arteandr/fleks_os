@@ -796,20 +796,17 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
 }
 
 std::string FS::get_current_username() {
-  if (this->current_directory == nullptr)
-    return "root";
-
-  this->read_inode(this->current_directory_i_no, this->current_directory);
   void *data;
-  size_t read_size = this->read_file("shadow", data);
-  shadow *users = (shadow *)data;
-  size_t users_count = read_size / sizeof(shadow);
-  std::vector<shadow> users_vec(users, users + users_count);
-  for (auto it = users_vec.begin(); it != users_vec.end(); ++it)
-    if (it->uid == this->current_uid)
-      return it->login;
+  size_t size = this->read_file("shadow", data);
+  shadow *users = reinterpret_cast<shadow *>(data);
+  shadow *p = users;
+  for (; p != nullptr; p += sizeof(shadow)) {
+    const shadow &usr = *p;
+    if (usr.uid == this->current_uid)
+      return usr.login;
+  }
 
-  return "root";
+  return "NOT_EXIST";
 }
 
 size_t FS::read_file(const char *filename, void *&buffer) {
@@ -837,7 +834,8 @@ size_t FS::read_file(const char *filename, void *&buffer) {
     return EOF;
   }
 
-  char *ret = new char[i_node->i_size];
+  // char *ret = new char[i_node->i_size];
+  char *ret = new char[i_node->i_blocks * this->superblock->s_block_size];
   char *p = ret;
   char *local_buffer = nullptr;
   for (size_t i = 0; i < i_node->i_blocks; ++i) {

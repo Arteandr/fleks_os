@@ -1,12 +1,9 @@
 #include "../includes/console.h"
 #include <cstdio>
 #include <cstring>
-#include <ios>
 #include <iostream>
-#include <limits>
 #include <string>
 #include <vector>
-using namespace std;
 
 void trim(char *str) {
   if (str == nullptr) {
@@ -31,8 +28,8 @@ void trim(char *str) {
 }
 
 ConsoleInput *Console::prompt() {
-  vector<string> cmd;
-  string tmp;
+  std::vector<std::string> cmd;
+  std::string tmp;
 
   cmd.clear();
   char i[256];
@@ -44,8 +41,8 @@ ConsoleInput *Console::prompt() {
     token = strtok(nullptr, " ");
   }
 
-  cin.sync();
-  cin.clear();
+  std::cin.sync();
+  std::cin.clear();
   ConsoleInput *input = new ConsoleInput();
   input->cmd = cmd[0];
   cmd.erase(cmd.begin());
