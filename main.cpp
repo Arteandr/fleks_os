@@ -2,12 +2,15 @@
 #include "includes/executor.h"
 #include "includes/fs.h"
 #include "includes/os_status.h"
+#include "shadow.h"
 #include "src/utils.hpp"
+#include "useradd.h"
 #include <bits/types/time_t.h>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 #define OS_NAME "fleksOS"
 
@@ -28,7 +31,6 @@ void start() {
   Executor *executor = new Executor(*fs);
   bool mainLoop = true;
   while (mainLoop) {
-    // auto old_map = executor->cmds;
     std::string curr_time = utils::current_time();
     std::cout << "\x1B[31m" << curr_time << " " << OS_NAME << "@"
               << fs->get_current_username() << ":~$ \033[0m";
@@ -47,7 +49,6 @@ void start() {
         continue;
       }
     }
-    // executor->cmds = old_map;
   }
 }
 
@@ -55,6 +56,7 @@ void install() {
   std::string curr_time;
   u32 fs_size, block_size;
   std::string password;
+  std::string user_login, user_password;
   ConsoleInput *input = nullptr;
   std::string error = "";
 
@@ -141,8 +143,59 @@ void install() {
     break;
   }
 
+  std::string root_password_star(password.length(), '*');
+  while (mainLoop) {
+    clear();
+    curr_time = utils::current_time();
+    FS::log("Размер файловой системы: \x1B[31m" + std::to_string(fs_size) +
+            " Мбайт\033[0m\n");
+    FS::log("Выбранный размер блока: \x1B[31m" + std::to_string(block_size) +
+            " Байт\033[0m\n");
+    FS::log("Пароль суперпользователя: \x1B[31m" + root_password_star +
+            "\033[0m\n");
+    if (error.length() > 0)
+      FS::log(error, LogLevel::error);
+
+    FS::log("Введите имя пользователя: ", LogLevel::info, false);
+    input = Console::prompt();
+    if (input->cmd.length() < 1 || input->cmd.length() > USER_LOGIN_MAX) {
+      error = "Введено неверное имя пользователя.";
+      continue;
+    } else
+      user_login = input->cmd;
+
+    error.clear();
+    break;
+  }
+
+  while (mainLoop) {
+    clear();
+    curr_time = utils::current_time();
+    FS::log("Размер файловой системы: \x1B[31m" + std::to_string(fs_size) +
+            " Мбайт\033[0m\n");
+    FS::log("Выбранный размер блока: \x1B[31m" + std::to_string(block_size) +
+            " Байт\033[0m\n");
+    FS::log("Пароль суперпользователя: \x1B[31m" + root_password_star +
+            "\033[0m\n");
+    FS::log("Имя пользователя: \x1B[31m" + user_login + "\033[0m\n");
+    if (error.length() > 0)
+      FS::log(error, LogLevel::error);
+
+    FS::log("Введите пароль пользователя: ", LogLevel::info, false);
+    input = Console::prompt();
+    if (input->cmd.length() < 1 || input->cmd.length() > 15) {
+      error = "Введен неверный пароль пользователя.";
+      continue;
+    } else
+      user_password = input->cmd;
+
+    error.clear();
+    break;
+  }
+  auto user_data = std::make_pair(user_login, user_password);
+
   clear();
-  FS::format(fs_size << 20, block_size, password);
+  FS::format(fs_size << 20, block_size, password, user_data);
   system("stty raw");
   getchar();
   system("stty cooked");

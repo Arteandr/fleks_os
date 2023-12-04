@@ -162,7 +162,8 @@ info_status FS::directory_info(const char *name, u32 inode_no, u16 type) {
   return stat;
 }
 
-void FS::format(size_t fs_size, size_t block_size, std::string root_password) {
+void FS::format(size_t fs_size, size_t block_size, std::string root_password,
+                std::pair<std::string, std::string> user_data) {
   FS::log("Запуск форматирования файловой системы");
   FS::log("Размер ФС (байт): " + std::to_string(fs_size));
   FS::log("Размер блока (байт): " + std::to_string(block_size));
@@ -353,6 +354,7 @@ void FS::format(size_t fs_size, size_t block_size, std::string root_password) {
   fs->make_file(shadow_filename.c_str(), shadow_filename.length(), S_SYSTEM);
 
   fs->add_user("root", root_password.c_str());
+  fs->add_user(user_data.first.c_str(), user_data.second.c_str());
 
   delete fs;
   delete root;
@@ -784,8 +786,6 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
     }
   }
 
-  // i_node->i_size = ((size - 1) / this->superblock->s_block_size + 1) *
-  //                  this->superblock->s_block_size;
   i_node->i_size = size;
   inode *inode_table = this->get_inode_table(group_no);
   inode_table[entry.directory->inode] = *i_node;

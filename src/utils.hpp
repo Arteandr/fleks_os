@@ -24,6 +24,7 @@ inline std::string current_time() {
 
   return oss.str();
 }
+
 inline std::vector<std::string> split_by_newline(const std::string &str) {
   auto result = std::vector<std::string>{};
   auto ss = std::stringstream{str};
@@ -32,6 +33,7 @@ inline std::vector<std::string> split_by_newline(const std::string &str) {
 
   return result;
 }
+
 inline u32 current_time_to_u32() {
   std::time_t current_time = std::time(nullptr);
   u32 current_time_as_u32 = static_cast<u32>(current_time);
