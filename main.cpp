@@ -14,15 +14,14 @@
 using namespace std;
 void clear() { system("clear"); }
 
+static FS *fs = nullptr;
+
 void start() {
   clear();
-  FS *fs = nullptr;
-
   try {
     fs = new FS(FS_FILENAME, true);
   } catch (std::exception e) {
     FS::log(e.what(), LogLevel::error);
-    delete fs;
     return;
   }
 
@@ -44,6 +43,8 @@ void start() {
         mainLoop = false;
         clear();
         break;
+      default:
+        continue;
       }
     }
   }
@@ -140,7 +141,7 @@ void install() {
   }
 
   clear();
-  FS::format(fs_size * 1024 * 1024, block_size, password);
+  FS::format(fs_size << 20, block_size, password);
   system("stty raw");
   getchar();
   system("stty cooked");

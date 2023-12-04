@@ -14,6 +14,7 @@
 #include "../includes/users.h"
 #include "../includes/write.h"
 #include <string>
+#include <utility>
 #include <vector>
 
 Executor::Executor(FS &fs) {
@@ -29,23 +30,21 @@ Executor::Executor(FS &fs) {
       {"usr", new UsersCommand(fs)},      {"chmod", new ChmodCommand(fs)},
       {"useradd", new UserAddCommand(fs)}};
   int commands_count = sizeof(all_commands) / sizeof(all_commands[0]);
-  for (int i = 0; i < commands_count; i++)
-    this->cmds.insert(std::pair<std::string, Command *>(all_commands[i].alias,
-                                                        all_commands[i].cmd));
+  for (int i = 0; i < commands_count; i++) {
+    std::pair<std::string, Command *> p =
+        std::make_pair(all_commands[i].alias, all_commands[i].cmd);
+    this->cmds.insert(p);
+  }
 };
-
-Executor::~Executor() {
-  // std::map<std::string, Command *>::iterator it = this->cmds.begin(),
-  //                                            end = this->cmds.end();
-  //
-  // for (; it != end; ++it)
-  //   delete it->second;
-}
+// TODO: почистить
+Executor::~Executor() {}
 
 int Executor::execute(std::string cmd, std::vector<std::string> args) {
-  if (this->cmds.count(cmd))
-    // return this->cmds[cmd]->execute(args);
-    return this->cmds.at(cmd)->execute(args);
-  else
+  auto old_map = this->cmds;
+  if (this->cmds.count(cmd)) {
+    int status = this->cmds.at(cmd)->execute(args);
+    this->cmds = old_map;
+    return status;
+  } else
     return OS_ERROR;
 };
