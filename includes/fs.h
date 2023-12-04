@@ -65,6 +65,7 @@ private:
                             inode *i);
   bool user_exist(const char *login);
   bool user_exist(u32 uid);
+  int check_password(const char *login, const char *password);
   u32 get_uid();
   dentry *make_directory_block();
   info_status directory_info(const char *name, u32 inode_no, u16 type);
@@ -99,6 +100,7 @@ public:
   std::string get_current_username();
   void chmod(const char *filename, u32 access);
   void users();
+  bool login(const char *login, const char *password);
 };
 
 #endif

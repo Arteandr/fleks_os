@@ -2,6 +2,8 @@
 #include "../includes/dentry.h"
 #include "../includes/superblock.h"
 #include "inode.h"
+#include "shadow.h"
+#include "shared.h"
 #include "utils.hpp"
 #include <cerrno>
 #include <cmath>
@@ -799,9 +801,8 @@ std::string FS::get_current_username() {
   void *data;
   size_t size = this->read_file("shadow", data);
   shadow *users = reinterpret_cast<shadow *>(data);
-  shadow *p = users;
-  for (; p != nullptr; p += sizeof(shadow)) {
-    const shadow &usr = *p;
+  for (shadow *p = users; p != nullptr; p++) {
+    shadow &usr = *p;
     if (usr.uid == this->current_uid)
       return usr.login;
   }
@@ -829,7 +830,7 @@ size_t FS::read_file(const char *filename, void *&buffer) {
 
   if (!(i_node->i_uid == current_uid && i_node->mode(S_IRUSR)) &&
       !(i_node->i_uid != current_uid && i_node->mode(S_IROTH)) &&
-      this->current_uid != 0) {
+      this->current_uid != 0 && !i_node->mode(S_SYSTEM)) {
     delete[] entry.block;
     return EOF;
   }
@@ -1181,6 +1182,42 @@ void FS::chmod(const char *filename, u32 access) {
   this->set_inode_table(group_no, inode_table);
 
   return;
+}
+
+int FS::check_password(const char *login, const char *password) {
+  void *data;
+  size_t size = this->read_file("shadow", data);
+  shadow *users = reinterpret_cast<shadow *>(data);
+  for (shadow *p = users; p != nullptr; p++) {
+    shadow &usr = *p;
+    if (std::strcmp(usr.login, login) != 0)
+      continue;
+
+    char *hexed_password = new char[USER_PASSWORD_HASH];
+    hexed_password[64] = '\0';
+    sha256_easy_hash_hex(password, strlen(password), hexed_password);
+    std::cout << hexed_password << std::endl;
+    std::cout << usr.password << std::endl;
+
+    if (std::strcmp(hexed_password, usr.password) == 0)
+      return usr.uid;
+    else
+      return -1;
+  }
+
+  return -1;
+}
+
+bool FS::login(const char *login, const char *password) {
+  if (!this->user_exist(login))
+    return false;
+
+  int uid;
+  if ((uid = this->check_password(login, password)) > -1) {
+    this->current_uid = static_cast<u16>(uid);
+    return true;
+  } else
+    return false;
 }
 
 void FS::list() {

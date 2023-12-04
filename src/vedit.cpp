@@ -7,21 +7,15 @@
 #include <string>
 
 VisualEditor::VisualEditor(const std::string &filename) {
-  std::cout << "verror 1" << std::endl;
   x = y = 0;
   mode = 'n';
   status = " NORMAL";
   this->filename = filename;
 
-  std::cout << "verror 2" << std::endl;
   initscr();
-  std::cout << "verror 3" << std::endl;
   noecho();
-  std::cout << "verror 4" << std::endl;
   cbreak();
-  std::cout << "verror 5" << std::endl;
   keypad(stdscr, true);
-  std::cout << "verror 6" << std::endl;
   use_default_colors();
   start_color();
 }

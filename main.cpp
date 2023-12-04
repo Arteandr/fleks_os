@@ -27,9 +27,52 @@ void start() {
     FS::log(e.what(), LogLevel::error);
     return;
   }
+  std::string user_login, user_password;
+  bool mainLoop = true;
+  do {
+    std::string curr_time;
+    ConsoleInput *input = nullptr;
+    std::string error = "";
+
+    while (mainLoop) {
+      clear();
+      curr_time = utils::current_time();
+      if (error.length() > 0)
+        FS::log(error, LogLevel::error);
+
+      FS::log("Введите имя пользователя: ", LogLevel::info, false);
+      input = Console::prompt();
+      if (input->cmd.length() < 1 || input->cmd.length() > USER_LOGIN_MAX) {
+        error = "Введено неверное имя пользователя";
+        continue;
+      } else
+        user_login = input->cmd;
+
+      error.clear();
+      break;
+    }
+
+    while (mainLoop) {
+      clear();
+      curr_time = utils::current_time();
+      FS::log("Имя пользователя: \x1B[31m" + user_login + "\033[0m\n");
+      if (error.length() > 0)
+        FS::log(error, LogLevel::error);
+
+      FS::log("Введите пароль пользователя: ", LogLevel::info, false);
+      input = Console::prompt();
+      if (input->cmd.length() < 1 || input->cmd.length() > 15) {
+        error = "Введен неверный пароль пользователя";
+        continue;
+      } else
+        user_password = input->cmd;
+
+      error.clear();
+      break;
+    }
+  } while (!fs->login(user_login.c_str(), user_password.c_str()));
 
   Executor *executor = new Executor(*fs);
-  bool mainLoop = true;
   while (mainLoop) {
     std::string curr_time = utils::current_time();
     std::cout << "\x1B[31m" << curr_time << " " << OS_NAME << "@"
