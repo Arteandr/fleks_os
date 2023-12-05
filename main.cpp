@@ -71,6 +71,7 @@ void start() {
       break;
     }
   } while (!fs->login(user_login.c_str(), user_password.c_str()));
+  clear();
 
   Executor *executor = new Executor(*fs);
   while (mainLoop) {

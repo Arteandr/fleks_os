@@ -13,6 +13,7 @@
 #include "../includes/useradd.h"
 #include "../includes/users.h"
 #include "../includes/write.h"
+#include "info.h"
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,13 +23,13 @@ Executor::Executor(FS &fs) {
     std::string alias;
     Command *cmd;
   } all_commands[] = {
-      {"clear", new ClearCommand(fs)},    {"exit", new ExitCommand(fs)},
-      {"ls", new ListCommand(fs)},        {"file", new MakeFileCommand(fs)},
-      {"rename", new RenameCommand(fs)},  {"bm", new BmCommand(fs)},
-      {"rm", new RemoveCommand(fs)},      {"cp", new CopyCommand(fs)},
-      {"vedit", new WriteCommand(fs)},    {"cat", new CatCommand(fs)},
-      {"usr", new UsersCommand(fs)},      {"chmod", new ChmodCommand(fs)},
-      {"useradd", new UserAddCommand(fs)}};
+      {"clear", new ClearCommand(fs)},     {"exit", new ExitCommand(fs)},
+      {"ls", new ListCommand(fs)},         {"file", new MakeFileCommand(fs)},
+      {"rename", new RenameCommand(fs)},   {"bm", new BmCommand(fs)},
+      {"rm", new RemoveCommand(fs)},       {"cp", new CopyCommand(fs)},
+      {"vedit", new WriteCommand(fs)},     {"cat", new CatCommand(fs)},
+      {"usr", new UsersCommand(fs)},       {"chmod", new ChmodCommand(fs)},
+      {"useradd", new UserAddCommand(fs)}, {"info", new InfoCommand(fs)}};
   int commands_count = sizeof(all_commands) / sizeof(all_commands[0]);
   for (int i = 0; i < commands_count; i++) {
     std::pair<std::string, Command *> p =

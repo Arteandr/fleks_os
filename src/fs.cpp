@@ -1072,6 +1072,12 @@ void FS::copy(const char *src_filename, const char *dest_filename,
     return;
   }
 
+  if (src_inode->mode(S_SYSTEM)) {
+    log("Невозможно скопировать системный файл", LogLevel::error);
+    delete[] src_entry.block;
+    return;
+  }
+
   info_status dest_entry = this->directory_info(
       dest_filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
   if (dest_entry.exist) {
@@ -1339,14 +1345,20 @@ void FS::info() {
   FS::log("Общий размер ФС: " +
           std::to_string(this->superblock->s_blocks_count *
                          this->superblock->s_block_size) +
-          " байт");
+          " Байт");
+  FS::log("Общий размер ФС: " +
+          std::to_string((this->superblock->s_blocks_count *
+                          this->superblock->s_block_size) >>
+                         20) +
+          " Мбайт");
   FS::log("Общее количество inode - " +
           std::to_string(this->superblock->s_inodes_count));
   FS::log("Общее количество блоков - " +
           std::to_string(this->superblock->s_blocks_count));
   FS::log("Количество свободных inode - " +
           std::to_string(this->superblock->s_free_indes_count));
-  FS::log("Размер блока - " + std::to_string(this->superblock->s_block_size));
+  FS::log("Размер блока - " + std::to_string(this->superblock->s_block_size) +
+          " Байт");
   FS::log("Количество блоков в группе - " +
           std::to_string(this->superblock->s_blocks_per_group));
   std::stringstream ss;
