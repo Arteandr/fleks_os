@@ -286,7 +286,6 @@ int main() {
     if (input->cmd.length() > 0) {
       switch (atoi(input->cmd.c_str())) {
       case 1:
-        loop = false;
         start();
         break;
       case 2:

@@ -769,6 +769,13 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
   inode *i_node;
   this->read_inode(entry.directory->inode, i_node);
 
+  if (!(i_node->i_uid == current_uid && i_node->mode(S_IWUSR)) &&
+      !(i_node->i_uid != current_uid && i_node->mode(S_IWOTH)) &&
+      this->current_uid != 0 && !i_node->mode(S_SYSTEM)) {
+    delete[] entry.block;
+    return EOF;
+  }
+
   char *p = (char *)data;
   char *mem = nullptr;
   for (size_t i = 0;
@@ -928,9 +935,6 @@ void FS::users() {
 }
 
 u32 FS::add_user(const char *login, const char *password) {
-  if (this->current_uid != 0)
-    return 0;
-
   if (std::strlen(login) == 0 || std::strlen(password) == 0)
     return 0;
 
@@ -993,10 +997,6 @@ bool FS::delete_user(u32 uid) {
 }
 
 u32 FS::get_uid() {
-  if (this->current_uid != 0)
-    return -1;
-
-  this->read_inode(this->current_directory_i_no, this->current_directory);
   void *data;
   size_t read_size = this->read_file("shadow", data);
   shadow *users = (shadow *)data;
@@ -1204,10 +1204,11 @@ void FS::chmod(const char *filename, u32 access) {
 
   inode *i_node;
   this->read_inode(entry.directory->inode, i_node);
-  // if (this->current_uid != 0 && i_node->i_uid != this->current_uid != 0) {
-  //   delete[] entry.block;
-  //   return;
-  // }
+  if (this->current_uid != 0 && i_node->i_uid != this->current_uid) {
+    log("У вас нет прав на выполнение этой команды", LogLevel::error);
+    delete[] entry.block;
+    return;
+  }
 
   u8 user = access / 10;
   u8 other = access % 10;
@@ -1232,6 +1233,7 @@ void FS::chmod(const char *filename, u32 access) {
 }
 
 int FS::check_password(const char *login, const char *password) {
+  this->read_inode(this->current_directory_i_no, this->current_directory);
   void *data;
   this->read_file("shadow", data);
   shadow *users = reinterpret_cast<shadow *>(data);
