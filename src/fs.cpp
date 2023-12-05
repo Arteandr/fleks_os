@@ -692,13 +692,17 @@ void FS::log(std::string message, LogLevel log_level, bool new_line) {
 }
 
 void FS::make_file(const char *filename, u32 filename_size, u16 access) {
-  if (std::strlen(filename) > FILE_NAME_LENGTH)
+  if (std::strlen(filename) > FILE_NAME_LENGTH) {
+    log("Неверно указано название файла", LogLevel::error);
     return;
+  }
 
   info_status stat =
       this->directory_info(filename, this->current_directory_i_no, SAME_ENTRY);
-  if (stat.exist)
+  if (stat.exist) {
+    log("Файл " + std::string(filename) + " уже существует", LogLevel::error);
     return;
+  }
 
   auto [group_no, block_no] = this->allocate_block();
   debug("Блок выделенный под файл: " + std::to_string(block_no));
@@ -744,11 +748,9 @@ void FS::make_file(const char *filename, u32 filename_size, u16 access) {
 }
 
 u32 FS::write_file(const char *filename, void *data, u32 size) {
-  // std::cout << "t:1" << std::endl;
   if (std::ceil((float)size / this->superblock->s_block_size) > BLOCKS_COUNT)
     return 0;
 
-  // std::cout << "t:2" << std::endl;
   info_status entry = this->directory_info(
       filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
   if (!entry.exist) {
@@ -756,8 +758,8 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
     return 0;
   }
 
-  // std::cout << "t:3" << std::endl;
   if (entry.directory->file_type != FILE_TYPE_FILE) {
+    log("Запись доступна только в файл", LogLevel::error);
     delete[] entry.block;
     return 0;
   }
@@ -867,12 +869,15 @@ size_t FS::read_file(const char *filename, void *&buffer) {
 }
 
 void FS::remove(const char *filename) {
-  if (strlen(filename) == 0)
+  if (strlen(filename) == 0) {
+    log("Неверно указано название файла", LogLevel::error);
     return;
+  }
 
   info_status entry = this->directory_info(
       filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
   if (!entry.exist) {
+    log("Файл " + std::string(filename) + " не найден", LogLevel::error);
     delete[] entry.block;
     return;
   }
@@ -893,6 +898,7 @@ void FS::remove(const char *filename) {
   if (!(i_node->i_uid == current_uid && i_node->mode(S_IWUSR)) &&
       !(i_node->i_uid != current_uid && i_node->mode(S_IWOTH)) &&
       this->current_uid != 0) {
+    log("У Вас нет прав на выполнение этой команды", LogLevel::error);
     delete[] entry.block;
     return;
   }
@@ -918,8 +924,8 @@ void FS::users() {
   std::vector<shadow> users_vec(users, users + users_count);
   std::cout << "total " << users_vec.size() << std::endl << std::endl;
   for (auto user : users_vec)
-    std::cout << user.uid << ":" << user.login << ":" << user.password
-              << std::endl;
+    std::cout << user.uid << ":" << user.login << ":"
+              << std::string(strlen(user.password), '*') << std::endl;
 }
 
 u32 FS::add_user(const char *login, const char *password) {
@@ -1041,15 +1047,20 @@ bool FS::user_exist(u32 uid) {
 
 void FS::copy(const char *src_filename, const char *dest_filename,
               size_t dest_filename_size) {
-  if (strlen(src_filename) == 0 || strlen(dest_filename) == 0)
+  if (strlen(src_filename) == 0 || strlen(dest_filename) == 0) {
+    log("Неверно указано название файла", LogLevel::error);
     return;
+  }
   if (strlen(src_filename) > FILE_NAME_LENGTH ||
-      strlen(dest_filename) > FILE_NAME_LENGTH)
+      strlen(dest_filename) > FILE_NAME_LENGTH) {
+    log("Неверно указано название файла", LogLevel::error);
     return;
+  }
 
   info_status src_entry = this->directory_info(
       src_filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
   if (!src_entry.exist) {
+    log("Файл " + std::string(src_filename) + " не найден", LogLevel::error);
     delete[] src_entry.block;
     return;
   }
@@ -1065,6 +1076,8 @@ void FS::copy(const char *src_filename, const char *dest_filename,
   info_status dest_entry = this->directory_info(
       dest_filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
   if (dest_entry.exist) {
+    log("Файл " + std::string(dest_filename) + " уже существует",
+        LogLevel::error);
     delete[] dest_entry.block;
     return;
   }
@@ -1110,6 +1123,7 @@ void FS::copy(const char *src_filename, const char *dest_filename,
   this->write_block(group_no, this->current_directory, empty_entry.block_no,
                     empty_entry.block);
 
+  this->change_mtime(group_no, dest_inode_no, dest_inode);
   delete dest_inode;
   delete[] src_entry.block;
   delete[] dest_entry.block;
@@ -1121,13 +1135,16 @@ void FS::rename(const char *old_filename, const char *new_filename) {
     return;
 
   if (strlen(old_filename) > FILE_NAME_LENGTH ||
-      strlen(new_filename) > FILE_NAME_LENGTH)
+      strlen(new_filename) > FILE_NAME_LENGTH) {
+    log("Введено неверное название файла", LogLevel::error);
     return;
+  }
 
   info_status entry = this->directory_info(
       old_filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
 
   if (!entry.exist) {
+    log("Введено неверное название файла", LogLevel::error);
     delete[] entry.block;
     return;
   }
@@ -1142,11 +1159,13 @@ void FS::rename(const char *old_filename, const char *new_filename) {
   if (!(i_node->i_uid == current_uid && i_node->mode(S_IWUSR)) &&
       !(i_node->i_uid != current_uid && i_node->mode(S_IWOTH)) &&
       this->current_uid != 0) {
+    log("У Вас нет прав на выполнение этой команды", LogLevel::error);
     delete[] entry.block;
     return;
   }
 
   if (entry_new.exist) {
+    log("Файл с таким именем уже существует", LogLevel::error);
     return;
   }
 
@@ -1173,20 +1192,22 @@ void FS::chmod(const char *filename, u32 access) {
   info_status entry = this->directory_info(
       filename, this->current_directory_i_no, SAME_ENTRY | RETURN_BLOCK);
   if (!entry.exist) {
+    log("Файл " + std::string(filename) + " не найден", LogLevel::error);
     delete[] entry.block;
     return;
   }
 
   inode *i_node;
   this->read_inode(entry.directory->inode, i_node);
-  if (this->current_uid != 0 && i_node->i_uid != this->current_uid != 0) {
-    delete[] entry.block;
-    return;
-  }
+  // if (this->current_uid != 0 && i_node->i_uid != this->current_uid != 0) {
+  //   delete[] entry.block;
+  //   return;
+  // }
 
   u8 user = access / 10;
   u8 other = access % 10;
   if (access < 0) {
+    log("Неверно указаны права доступа", LogLevel::error);
     delete[] entry.block;
     return;
   }
@@ -1206,7 +1227,7 @@ void FS::chmod(const char *filename, u32 access) {
 
 int FS::check_password(const char *login, const char *password) {
   void *data;
-  size_t size = this->read_file("shadow", data);
+  this->read_file("shadow", data);
   shadow *users = reinterpret_cast<shadow *>(data);
   for (shadow *p = users; p != nullptr; p++) {
     shadow &usr = *p;
