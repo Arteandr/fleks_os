@@ -764,13 +764,11 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
     return 0;
   }
 
-  // std::cout << "t:4" << std::endl;
   const u32 group_no =
       std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
   inode *i_node;
   this->read_inode(entry.directory->inode, i_node);
 
-  // std::cout << "t:5" << std::endl;
   char *p = (char *)data;
   char *mem = nullptr;
   for (size_t i = 0;
@@ -793,6 +791,7 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
   }
 
   i_node->i_size = size;
+  i_node->i_mtime = utils::current_time_to_u32();
   inode *inode_table = this->get_inode_table(group_no);
   inode_table[entry.directory->inode] = *i_node;
   this->set_inode_table(group_no, inode_table);
@@ -1214,6 +1213,7 @@ void FS::chmod(const char *filename, u32 access) {
 
   u32 new_access = 0;
   i_node->i_mode = new_access | (user << 3) | other;
+  i_node->i_mtime = utils::current_time_to_u32();
 
   const u32 group_no =
       std::ceil(entry.directory->inode / this->superblock->s_inodes_per_group);
