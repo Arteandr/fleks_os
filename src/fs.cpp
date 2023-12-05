@@ -346,6 +346,7 @@ void FS::format(size_t fs_size, size_t block_size, std::string root_password,
   root->i_mode = S_IROTH | S_IRUSR | S_IWUSR | S_IXUSR;
   root->i_uid = 0;
   root->i_ctime = utils::current_time_to_u32();
+  root->i_mtime = utils::current_time_to_u32();
   root->i_size = fs->superblock->s_block_size;
   fs->make_empty_directory(group_no, FS_ROOT_INODE_NO, FS_ROOT_INODE_NO, root);
   fs->create_inode(FS_ROOT_INODE_NO, root);
@@ -708,6 +709,7 @@ void FS::make_file(const char *filename, u32 filename_size, u16 access) {
   i_node->i_mode = access | S_IRUSR | S_IWUSR | S_IXUSR;
   i_node->i_uid = this->current_uid;
   i_node->i_ctime = utils::current_time_to_u32();
+  i_node->i_mtime = utils::current_time_to_u32();
   u32 inode_no = this->create_inode(i_node);
 
   info_status empty_entry = this->directory_info(
@@ -795,6 +797,19 @@ u32 FS::write_file(const char *filename, void *data, u32 size) {
 
   delete[] entry.block;
   return 0;
+}
+
+std::string FS::get_username_by_uid(u32 uid) {
+  void *data;
+  this->read_file("shadow", data);
+  shadow *users = reinterpret_cast<shadow *>(data);
+  for (shadow *p = users; p != nullptr; p++) {
+    shadow &usr = *p;
+    if (usr.uid == uid)
+      return usr.login;
+  }
+
+  return "NOT_EXIST";
 }
 
 std::string FS::get_current_username() {
@@ -956,11 +971,8 @@ bool FS::delete_user(u32 uid) {
   std::cout << "test 2" << std::endl;
 
   void *data;
-  std::cout << "test 3" << std::endl;
   size_t read_size = this->read_file("shadow", data);
-  std::cout << "test 4" << std::endl;
   shadow *users = (shadow *)data;
-  std::cout << "test 5" << std::endl;
   size_t users_count = read_size / sizeof(shadow);
   shadow *new_users = new shadow[users_count - 1];
   for (size_t i = 0; i < users_count; ++i) {
@@ -1144,9 +1156,17 @@ void FS::rename(const char *old_filename, const char *new_filename) {
 
   this->write_block(group_no, this->current_directory, entry.block_no,
                     entry.block);
+  this->change_mtime(group_no, entry.directory->inode, i_node);
 
   delete[] entry.block;
   return;
+}
+
+void FS::change_mtime(u32 group_no, u32 inode_no, inode *i_node) {
+  inode *inode_table = this->get_inode_table(group_no);
+  i_node->i_mtime = utils::current_time_to_u32();
+  inode_table[inode_no] = *i_node;
+  this->set_inode_table(group_no, inode_table);
 }
 
 void FS::chmod(const char *filename, u32 access) {
@@ -1196,8 +1216,6 @@ int FS::check_password(const char *login, const char *password) {
     char *hexed_password = new char[USER_PASSWORD_HASH];
     hexed_password[64] = '\0';
     sha256_easy_hash_hex(password, strlen(password), hexed_password);
-    std::cout << hexed_password << std::endl;
-    std::cout << usr.password << std::endl;
 
     if (std::strcmp(hexed_password, usr.password) == 0)
       return usr.uid;
@@ -1228,13 +1246,15 @@ void FS::list() {
   if (stat.found_count < 1)
     return;
 
-  std::vector<std::string> data = {"perm", "uid", "size", "ctime", "name"};
+  std::vector<std::string> data = {"inode", "perm",  "uid",   "uname",
+                                   "size",  "ctime", "mtime", "name"};
   size_t rows = stat.found_count + 1;
   size_t columns = data.size();
 
   for (size_t i = 0; i < stat.found_count; ++i) {
     inode *i_node;
     this->read_inode(stat.directory[i].inode, i_node);
+    data.push_back(std::to_string(stat.directory[i].inode));
     std::stringstream perm_ss;
     if (i_node->mode(S_IRUSR))
       perm_ss << "r";
@@ -1263,8 +1283,10 @@ void FS::list() {
     data.push_back(perm_ss.str());
 
     data.push_back(std::to_string(i_node->i_uid));
+    data.push_back(this->get_username_by_uid(i_node->i_uid));
     data.push_back(std::to_string(i_node->i_size));
     data.push_back(utils::current_time_from_u32(i_node->i_ctime));
+    data.push_back(utils::current_time_from_u32(i_node->i_mtime));
     std::stringstream ss;
     ss << "\033[32m" << stat.directory[i].name << "\033[0m";
     data.push_back(ss.str());

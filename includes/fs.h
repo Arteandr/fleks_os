@@ -67,6 +67,7 @@ private:
   bool user_exist(u32 uid);
   int check_password(const char *login, const char *password);
   u32 get_uid();
+  void change_mtime(u32 group_no, u32 inode_no, inode *);
   dentry *make_directory_block();
   info_status directory_info(const char *name, u32 inode_no, u16 type);
   void read_root();
@@ -98,6 +99,7 @@ public:
   bool delete_user(u32 uid);
   void add_user_prompt();
   std::string get_current_username();
+  std::string get_username_by_uid(u32 uid);
   void chmod(const char *filename, u32 access);
   void users();
   bool login(const char *login, const char *password);
