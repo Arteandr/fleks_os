@@ -6,6 +6,7 @@
 #include "src/utils.hpp"
 #include "useradd.h"
 #include <bits/types/time_t.h>
+#include <clocale>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -269,7 +270,6 @@ void logo() {
 int main() {
   logo();
   bool loop = true;
-
   while (loop) {
     clear();
     cout << "\x1B[31m"

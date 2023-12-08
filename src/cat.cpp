@@ -14,7 +14,6 @@ int CatCommand::execute(std::vector<std::string> args) {
     fs.log("У вас нет прав на выполнение этой команды", LogLevel::error);
     return OS_SUCCESS;
   }
-  std::cout << "READ_SIZE: " << read_size << std::endl;
 
   if (read_size <= 0)
     return OS_SUCCESS;

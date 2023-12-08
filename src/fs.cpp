@@ -944,7 +944,7 @@ u32 FS::add_user(const char *login, const char *password) {
     return 0;
   }
 
-  // this->read_inode(this->current_directory_i_no, this->current_directory);
+  this->read_inode(this->current_directory_i_no, this->current_directory);
   void *data;
   size_t read_size = this->read_file("shadow", data);
   shadow *users = (shadow *)data;
